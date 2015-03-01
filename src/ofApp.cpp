@@ -7,9 +7,6 @@ void ofApp::setup(){
     ofSetVerticalSync(true);
     ofEnableAlphaBlending();
     
-    //shader.setGeometryInputType(GL_LINES);
-	//shader.setGeometryOutputType(GL_TRIANGLE_STRIP);
-	//shader.setGeometryOutputCount(4);
 	shader.load("shaders/vert.glsl", "shaders/frag.glsl"); 
     
     ofBackground(70);
