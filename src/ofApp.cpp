@@ -4,7 +4,7 @@
 void ofApp::setup(){
     ofSetLogLevel(OF_LOG_VERBOSE);
     ofDisableArbTex();
-    ofSetVerticalSync(true);
+    //ofSetVerticalSync(true);
     ofEnableAlphaBlending();
     
 	shader.load("shaders/vert.glsl", "shaders/frag.glsl"); 
@@ -51,6 +51,7 @@ void ofApp::setup(){
             mesh.addVertex(vert);
             mesh.addTexCoord(texcoord);
             mesh.addNormal(normal);
+            mesh.addColor(ofFloatColor(1.0));
         }
     }
     for(int y = 0; y < rows-1; y++) {
@@ -118,6 +119,7 @@ void ofApp::draw_scene(){
     
     shader.begin();
     ofTranslate(-0.5, -0.5, 0);
+    ofColor(255);
     mesh.draw();
     // set phase in shader
     shader.setUniform1i("phase", phase.get());
@@ -265,9 +267,12 @@ void ofApp::phaseChanged(int &newPhase) {
             _cam_ori = ofVec3f(90,0,0);
             break;
         case 8:
-            _cam_pos = ofVec3f(0,0.1, 0.1);
+        case 9:
+        case 10:
+        case 11:
+            _cam_pos = ofVec3f(0,0.0, 0.1);
             _cam_ori = ofVec3f(0,0,0);
-            speed.set(14);
+            speed.set(10);
             break;
 
         default:

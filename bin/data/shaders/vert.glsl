@@ -1,4 +1,4 @@
-#version 120
+#version 150
 #extension GL_EXT_gpu_shader4 : enable
 
 uniform int phase;
@@ -6,6 +6,21 @@ const int a = 1140671485;
 const int c = 128201163;
 const int m = 16777216;
 const float PI = 3.14159265358979323846264;
+
+// these are for the programmable pipeline system and are passed in
+// by default from OpenFrameworks
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
+uniform mat4 textureMatrix;
+uniform mat4 modelViewProjectionMatrix;
+ 
+in vec4 position;
+in vec4 color;
+in vec4 normal;
+in vec2 texcoord;
+// this is the end of the default functionality
+
+out vec4 vertex_color;
 
 float sin_n(float val) {
     return sin(val*31)*0.5+0.5;
@@ -90,133 +105,133 @@ float lcg_norm(int val) {
 
 
 void phase0() {
-    gl_TexCoord[0] = gl_MultiTexCoord0;
-    vec4 vert_pos = vec4(gl_Vertex);
+    //gl_TexCoord[0] = texcoord;
+    vec4 vert_pos = position;
     // scale y axis
     vert_pos.y *= 0.01;
     //vert_pos.y += 0.5;
     // just a small z addition to make sure we have a visible line
     vert_pos.z += vert_pos.y*0.1;
-    gl_Position = gl_ModelViewProjectionMatrix * vert_pos;
-    gl_FrontColor = gl_Color;
+    gl_Position = modelViewProjectionMatrix * vert_pos;
+    vertex_color = color;
 }
 
 void phase1() {
-    gl_TexCoord[0] = gl_MultiTexCoord0;
-    vec4 vert_pos = vec4(gl_Vertex);
+    //gl_TexCoord[0] = texcoord;
+    vec4 vert_pos = position;
     // scale y axis
     vert_pos.y *= 0.01;
     //vert_pos.y += 0.5;
     vert_pos.z = sin_n(vert_pos.x)*0.1;
     // just a small z addition to make sure we have a visible line
     vert_pos.z += vert_pos.y*0.2;
-    gl_Position = gl_ModelViewProjectionMatrix * vert_pos;
-    gl_FrontColor = gl_Color;
+    gl_Position = modelViewProjectionMatrix * vert_pos;
+    vertex_color = color;
 }
 
 void phase2() {
-    gl_TexCoord[0] = gl_MultiTexCoord0;
-    vec4 vert_pos = vec4(gl_Vertex);
+    //gl_TexCoord[0] = texcoord;
+    vec4 vert_pos = position;
     vert_pos.z = sin_n(vert_pos.x)*0.1;
-    gl_Position = gl_ModelViewProjectionMatrix * vert_pos;
-    gl_FrontColor = gl_Color;
+    gl_Position = modelViewProjectionMatrix * vert_pos;
+    vertex_color = color;
 }
 
 void phase3() {
-    gl_TexCoord[0] = gl_MultiTexCoord0;
-    vec4 vert_pos = vec4(gl_Vertex);
+    //gl_TexCoord[0] = texcoord;
+    vec4 vert_pos = position;
     vert_pos.z = sin_n(vert_pos.x)*0.1;
-    gl_Position = gl_ModelViewProjectionMatrix * vert_pos;
-    gl_FrontColor = gl_Color * vec4(vec3(vert_pos.z*10),1);
+    gl_Position = modelViewProjectionMatrix * vert_pos;
+    vertex_color = color * vec4(vec3(vert_pos.z*10),1);
 }
 
 void phase4() {
-    gl_TexCoord[0] = gl_MultiTexCoord0;
-    vec4 vert_pos = vec4(gl_Vertex);
+    //gl_TexCoord[0] = texcoord;
+    vec4 vert_pos = position;
     vert_pos.z = (sin_n(vert_pos.x) * sin_n(vert_pos.y))*0.1;
-    gl_Position = gl_ModelViewProjectionMatrix * vert_pos;
-    gl_FrontColor = gl_Color * vec4(vec3(vert_pos.z*10),1);
+    gl_Position = modelViewProjectionMatrix * vert_pos;
+    vertex_color = color * vec4(vec3(vert_pos.z*10),1);
 }
 
 void phase5() {
-    gl_TexCoord[0] = gl_MultiTexCoord0;
-    vec4 vert_pos = vec4(gl_Vertex);
+    //gl_TexCoord[0] = texcoord;
+    vec4 vert_pos = position;
     vert_pos.z = (sin_n(vert_pos.x) * cos_n(vert_pos.y))*0.1;
-    gl_Position = gl_ModelViewProjectionMatrix * vert_pos;
-    gl_FrontColor = gl_Color * vec4(vec3(vert_pos.z*10),1);
+    gl_Position = modelViewProjectionMatrix * vert_pos;
+    vertex_color = color * vec4(vec3(vert_pos.z*10),1);
 }
 
 void phase6() {
-    gl_TexCoord[0] = gl_MultiTexCoord0;
-    vec4 vert_pos = vec4(gl_Vertex);
+    //gl_TexCoord[0] = texcoord;
+    vec4 vert_pos = position;
     // scale y axis
     vert_pos.y *= 0.01;
     vert_pos.z = sin_n(vert_pos.x)*0.1;
-    gl_Position = gl_ModelViewProjectionMatrix * vert_pos;
-    gl_FrontColor = gl_Color * vec4(vec3(vert_pos.z*10),1);
+    gl_Position = modelViewProjectionMatrix * vert_pos;
+    vertex_color = color * vec4(vec3(vert_pos.z*10),1);
 }
 
 void phase7() {
-    gl_TexCoord[0] = gl_MultiTexCoord0;
-    vec4 vert_pos = vec4(gl_Vertex);
+    //gl_TexCoord[0] = texcoord;
+    vec4 vert_pos = position;
     // scale y axis
     vert_pos.y *= 0.0000001;
     vert_pos.z = rand(vert_pos.xy)*0.1;
-    gl_Position = gl_ModelViewProjectionMatrix * vert_pos;
-    gl_FrontColor = gl_Color * vec4(vec3(vert_pos.z*10),1);
+    gl_Position = modelViewProjectionMatrix * vert_pos;
+    vertex_color = color * vec4(vec3(vert_pos.z*10),1);
 }
 
 void phase8() {
-    gl_TexCoord[0] = gl_MultiTexCoord0;
-    vec4 vert_pos = vec4(gl_Vertex);
+    //gl_TexCoord[0] = texcoord;
+    vec4 vert_pos = position;
     vert_pos.z = rand(vert_pos.xy)*0.1;
-    gl_Position = gl_ModelViewProjectionMatrix * vert_pos;
-    gl_FrontColor = gl_Color * vec4(vec3(vert_pos.z*10),1);
+    gl_Position = modelViewProjectionMatrix * vert_pos;
+    vertex_color = color * vec4(vec3(vert_pos.z*10),1);
 }
 
 void phase9() {
-    gl_TexCoord[0] = gl_MultiTexCoord0;
-    vec4 vert_pos = vec4(gl_Vertex);
+    //gl_TexCoord[0] = texcoord;
+    vec4 vert_pos = position;
     vert_pos.z = ip_rand(vert_pos.xy, 16)*0.1;
-    gl_Position = gl_ModelViewProjectionMatrix * vert_pos;
-    gl_FrontColor = gl_Color * vec4(vec3(vert_pos.z*10),1);
+    gl_Position = modelViewProjectionMatrix * vert_pos;
+    vertex_color = color * vec4(vec3(vert_pos.z*10),1);
 }
 
 void phase10() {
-    gl_TexCoord[0] = gl_MultiTexCoord0;
-    vec4 vert_pos = vec4(gl_Vertex);
+    //gl_TexCoord[0] = texcoord;
+    vec4 vert_pos = position;
     vert_pos.z = lip_rand(vert_pos.xy, 16)*0.1;
-    gl_Position = gl_ModelViewProjectionMatrix * vert_pos;
-    gl_FrontColor = gl_Color * vec4(vec3(vert_pos.z*10),1);
+    gl_Position = modelViewProjectionMatrix * vert_pos;
+    vertex_color = color * vec4(vec3(vert_pos.z*10),1);
 }
 
 void phase11() {
-    gl_TexCoord[0] = gl_MultiTexCoord0;
-    vec4 vert_pos = vec4(gl_Vertex);
+    //gl_TexCoord[0] = texcoord;
+    vec4 vert_pos = position;
     vert_pos.z = slip_rand(vert_pos.xy, 16)*0.1;
-    gl_Position = gl_ModelViewProjectionMatrix * vert_pos;
-    gl_FrontColor = gl_Color * vec4(vec3(vert_pos.z*10),1);
+    gl_Position = modelViewProjectionMatrix * vert_pos;
+    vertex_color = color * vec4(vec3(vert_pos.z*10),1);
 }
 
 void phase12() {
-    gl_TexCoord[0] = gl_MultiTexCoord0;
-    vec4 vert_pos = vec4(gl_Vertex);
+    //gl_TexCoord[0] = texcoord;
+    vec4 vert_pos = position;
     vert_pos.z = slip_rand(vert_pos.xy, 16)*0.1;
     vert_pos.z += rand(vert_pos.xy)*0.001;
-    gl_Position = gl_ModelViewProjectionMatrix * vert_pos;
-    gl_FrontColor = gl_Color * vec4(vec3(vert_pos.z*10),1);
+    gl_Position = modelViewProjectionMatrix * vert_pos;
+    vertex_color = color * vec4(vec3(vert_pos.z*10),1);
 }
 
 
 void phaseY() {
-    gl_TexCoord[0] = gl_MultiTexCoord0;
-    vec4 vert_pos = vec4(gl_Vertex);
+    //gl_TexCoord[0] = texcoord;
+    vec4 vert_pos = position;
     float prev = rand(floor(vert_pos.xy*10)/10)*0.1;
     float next = rand(ceil(vert_pos.xy*10)/10)*0.1;
     vec2 pos = (vert_pos.xy - floor(vert_pos.xy*10)/10) / (ceil(vert_pos.xy*10)/10 - floor(vert_pos.xy*10)/10);
     vert_pos.z = mix(prev, next, pos.x);
-    gl_FrontColor = vec4(vec3(vert_pos.z*10), 1);
-    gl_Position = gl_ModelViewProjectionMatrix * vert_pos;
+    vertex_color = vec4(vec3(vert_pos.z*10), 1);
+    gl_Position = modelViewProjectionMatrix * vert_pos;
 }
 
 void main()
@@ -263,11 +278,4 @@ void main()
             phase0();
             break;
     }
-    //vert_pos.y *= 0.01;
-    //vert_pos.y += 0.5;
-
-    //vert_pos.z = lcg_norm(lcg(int(vert_pos.x*512)));
-    //vert_pos.z = cos(vert_pos.x*100)*0.1;
-	//gl_Position = gl_Vertex;
-	//gl_FrontColor = gl_Color;// + vec4 (cos(vert_pos.x*10)*sin(vert_pos.y*10));
 }
