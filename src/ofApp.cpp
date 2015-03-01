@@ -3,7 +3,7 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     ofSetLogLevel(OF_LOG_VERBOSE);
-    //ofDisableArbTex();
+    ofDisableArbTex();
     ofSetVerticalSync(true);
     ofEnableAlphaBlending();
     
@@ -15,6 +15,9 @@ void ofApp::setup(){
     oculusRift.baseCamera = &cam; //attach to your camera
     oculusRift.setup();
 
+    // needed for programmable renderer
+    ofViewport(ofGetNativeViewport());
+    
     // setup params & gui
     setupParams();
     int p=0;
@@ -63,8 +66,6 @@ void ofApp::setup(){
             mesh.addIndex((y+1)*columns + x);
         }
     }
-    cam.begin();
-    cam.end();
 }
 
 //--------------------------------------------------------------
@@ -91,9 +92,11 @@ void ofApp::draw() {
     }
     else {
         ofLogWarning() << "Oculus is not setup";
+        ofEnableDepthTest();
         cam.begin();
         draw_scene();
         cam.end();
+        ofDisableDepthTest();
     }
     // draw ui
     ofDisableDepthTest();
@@ -113,7 +116,7 @@ void ofApp::draw_scene(){
         ofTranslate(-0.5,-0.5);
     }
     
-    //shader.begin();
+    shader.begin();
     ofTranslate(-0.5, -0.5, 0);
     mesh.draw();
     // set phase in shader
@@ -122,8 +125,7 @@ void ofApp::draw_scene(){
     // make light direction slowly rotate
     shader.setUniform3f("lightDir", sin(ofGetElapsedTimef()/10), cos(ofGetElapsedTimef()/10), 0);
 
-	ofColor(255);
-    //shader.end();
+    shader.end();
 	ofPopStyle();
 }
 
@@ -186,6 +188,7 @@ void ofApp::keyPressed(int key){
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
+    if (key == 'w') oculusRift.dismissSafetyWarning();
     if (key == ' ') {
         shader.load("shaders/vert.glsl", "shaders/frag.glsl");
     }
