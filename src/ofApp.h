@@ -24,7 +24,7 @@ class ofApp : public ofBaseApp{
 
         ofShader shader;
         ofVboMesh mesh;
-        ofEasyCam cam;
+        ofCamera cam;
         float rotPos;
 		ofQuaternion curRot;
 		ofVec2f lastMouse;
@@ -43,6 +43,7 @@ class ofApp : public ofBaseApp{
         void phaseChanged(int& newPhase);
         void updateValue(float& source, float& dest); 
         void updateValue(ofVec3f& source, ofVec3f& dest); 
+        void updateCamRotation(ofVec2f mouse);
         ofVec3f _cam_pos;
         ofVec3f _cam_ori;
 

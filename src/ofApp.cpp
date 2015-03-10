@@ -13,7 +13,7 @@ void ofApp::setup(){
     ofSetColor(255);
 
     oculusRift.baseCamera = &cam; //attach to your camera
-    oculusRift.setup();
+    //oculusRift.setup();
 
     // needed for programmable renderer
     ofViewport(ofGetNativeViewport());
@@ -92,7 +92,6 @@ void ofApp::draw() {
         glDisable(GL_DEPTH_TEST);
     }
     else {
-        ofLogWarning() << "Oculus is not setup";
         ofEnableDepthTest();
         cam.begin();
         draw_scene();
@@ -190,7 +189,7 @@ void ofApp::keyPressed(int key){
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
-    if (key == 'w') oculusRift.dismissSafetyWarning();
+    if (oculusRift.isSetup()) oculusRift.dismissSafetyWarning();
     if (key == ' ') {
         shader.load("shaders/vert.glsl", "shaders/frag.glsl");
     }
@@ -203,18 +202,8 @@ void ofApp::mouseMoved(int x, int y ){
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
-    ofVec2f mouse(x,y);
-    float rotX = y-lastMouse.y;
-    float rotY = x-lastMouse.x;
-    ofVec3f euler = ofVec3f(rotX, 0,  rotY);
-    ofQuaternion yRot(x-lastMouse.x, ofVec3f(0,0,-1));  
-    ofQuaternion xRot(y-lastMouse.y, ofVec3f(-1,0,0));  
-    //curRot *= xRot;
-    //curRot *= yRot;  
-    lastMouse = mouse;
-    cam.setOrientation(cam.getOrientationQuat() * yRot * xRot);
-    cam.setOrientation(cam.getOrientationEuler() * ofVec3f(1,0,1));
-    //_cam_ori = cam.getOrientationEuler();
+    updateCamRotation(ofVec2f(x,y));
+    lastMouse = ofVec2f(x,y);
 }
 
 //--------------------------------------------------------------
@@ -270,6 +259,14 @@ void ofApp::phaseChanged(int &newPhase) {
         case 9:
         case 10:
         case 11:
+        case 12:
+        case 13:
+        case 14:
+        case 15:
+        case 16:
+        case 17:
+        case 18:
+        case 19:
             _cam_pos = ofVec3f(0,0.0, 0.1);
             _cam_ori = ofVec3f(0,0,0);
             speed.set(10);
@@ -285,4 +282,13 @@ void ofApp::phaseChanged(int &newPhase) {
 void ofApp::updatePhase() {
     
     
+}
+
+void ofApp::updateCamRotation(ofVec2f mouse) {\
+    //float xdiff = ofGetWidth()/2.0 - mouse.x;
+    //float ydiff = ofGetHeight()/2.0 - mouse.y;
+    float xdiff = lastMouse.x - mouse.x;
+    float ydiff = lastMouse.y - mouse.y;
+    cam.rotate(xdiff*0.1, ofVec3f(0, 0, 1));
+    cam.rotate(ydiff*0.1, cam.getSideDir());
 }
