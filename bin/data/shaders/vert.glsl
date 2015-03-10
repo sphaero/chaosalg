@@ -16,11 +16,13 @@ uniform mat4 modelViewProjectionMatrix;
  
 in vec4 position;
 in vec4 color;
-in vec4 normal;
+in vec3 normal;
 in vec2 texcoord;
 // this is the end of the default functionality
 
-out vec4 vertex_color;
+out vec4 var_color;
+out vec2 var_texcoord;
+out vec3 var_normal;
 
 float sin_n(float val) {
     return sin(val*31)*0.5+0.5;
@@ -91,6 +93,13 @@ float slip_rand(vec2 co, float step) {
     return ny;
 }
 
+vec3 calc_normal(vec3 pos, vec3 _ngb1, vec3 _ngb2, vec3 _ngb3) {
+    vec3 tangent = _ngb1 - _ngb3;
+    vec3 bitangent = _ngb2 - _ngb3;
+    return normalize(cross(tangent, bitangent));
+    
+    //return normalize(cross(_ngb2 - _ngb1, _ngb3 - _ngb1));
+}
 
 // the most simple random number generator
 int lcg(int seed) {
@@ -113,7 +122,7 @@ void phase0() {
     // just a small z addition to make sure we have a visible line
     vert_pos.z += vert_pos.y*0.1;
     gl_Position = modelViewProjectionMatrix * vert_pos;
-    vertex_color = color;
+    var_color = color;
 }
 
 void phase1() {
@@ -126,7 +135,7 @@ void phase1() {
     // just a small z addition to make sure we have a visible line
     vert_pos.z += vert_pos.y*0.2;
     gl_Position = modelViewProjectionMatrix * vert_pos;
-    vertex_color = color;
+    var_color = color;
 }
 
 void phase2() {
@@ -134,7 +143,7 @@ void phase2() {
     vec4 vert_pos = position;
     vert_pos.z = sin_n(vert_pos.x)*0.1;
     gl_Position = modelViewProjectionMatrix * vert_pos;
-    vertex_color = color;
+    var_color = color;
 }
 
 void phase3() {
@@ -142,7 +151,7 @@ void phase3() {
     vec4 vert_pos = position;
     vert_pos.z = sin_n(vert_pos.x)*0.1;
     gl_Position = modelViewProjectionMatrix * vert_pos;
-    vertex_color = color * vec4(vec3(vert_pos.z*10),1);
+    var_color = color * vec4(vec3(vert_pos.z*10),1);
 }
 
 void phase4() {
@@ -150,7 +159,7 @@ void phase4() {
     vec4 vert_pos = position;
     vert_pos.z = (sin_n(vert_pos.x) * sin_n(vert_pos.y))*0.1;
     gl_Position = modelViewProjectionMatrix * vert_pos;
-    vertex_color = color * vec4(vec3(vert_pos.z*10),1);
+    var_color = color * vec4(vec3(vert_pos.z*10),1);
 }
 
 void phase5() {
@@ -158,7 +167,7 @@ void phase5() {
     vec4 vert_pos = position;
     vert_pos.z = (sin_n(vert_pos.x) * cos_n(vert_pos.y))*0.1;
     gl_Position = modelViewProjectionMatrix * vert_pos;
-    vertex_color = color * vec4(vec3(vert_pos.z*10),1);
+    var_color = color * vec4(vec3(vert_pos.z*10),1);
 }
 
 void phase6() {
@@ -168,7 +177,7 @@ void phase6() {
     vert_pos.y *= 0.01;
     vert_pos.z = sin_n(vert_pos.x)*0.1;
     gl_Position = modelViewProjectionMatrix * vert_pos;
-    vertex_color = color * vec4(vec3(vert_pos.z*10),1);
+    var_color = color * vec4(vec3(vert_pos.z*10),1);
 }
 
 void phase7() {
@@ -178,7 +187,7 @@ void phase7() {
     vert_pos.y *= 0.0000001;
     vert_pos.z = rand(vert_pos.xy)*0.1;
     gl_Position = modelViewProjectionMatrix * vert_pos;
-    vertex_color = color * vec4(vec3(vert_pos.z*10),1);
+    var_color = color * vec4(vec3(vert_pos.z*10),1);
 }
 
 void phase8() {
@@ -186,7 +195,7 @@ void phase8() {
     vec4 vert_pos = position;
     vert_pos.z = rand(vert_pos.xy)*0.1;
     gl_Position = modelViewProjectionMatrix * vert_pos;
-    vertex_color = color * vec4(vec3(vert_pos.z*10),1);
+    var_color = color * vec4(vec3(vert_pos.z*10),1);
 }
 
 void phase9() {
@@ -194,7 +203,7 @@ void phase9() {
     vec4 vert_pos = position;
     vert_pos.z = ip_rand(vert_pos.xy, 16)*0.1;
     gl_Position = modelViewProjectionMatrix * vert_pos;
-    vertex_color = color * vec4(vec3(vert_pos.z*10),1);
+    var_color = color * vec4(vec3(vert_pos.z*10),1);
 }
 
 void phase10() {
@@ -202,7 +211,7 @@ void phase10() {
     vec4 vert_pos = position;
     vert_pos.z = lip_rand(vert_pos.xy, 16)*0.1;
     gl_Position = modelViewProjectionMatrix * vert_pos;
-    vertex_color = color * vec4(vec3(vert_pos.z*10),1);
+    var_color = color * vec4(vec3(vert_pos.z*10),1);
 }
 
 void phase11() {
@@ -210,7 +219,7 @@ void phase11() {
     vec4 vert_pos = position;
     vert_pos.z = slip_rand(vert_pos.xy, 16)*0.1;
     gl_Position = modelViewProjectionMatrix * vert_pos;
-    vertex_color = color * vec4(vec3(vert_pos.z*10),1);
+    var_color = color * vec4(vec3(vert_pos.z*10),1);
 }
 
 void phase12() {
@@ -219,9 +228,48 @@ void phase12() {
     vert_pos.z = slip_rand(vert_pos.xy, 16)*0.1;
     vert_pos.z += rand(vert_pos.xy)*0.001;
     gl_Position = modelViewProjectionMatrix * vert_pos;
-    vertex_color = color * vec4(vec3(vert_pos.z*10),1);
+    var_color = color * vec4(vec3(vert_pos.z*10),1);
 }
 
+void phase17() {
+    vec4 vert_pos = position;
+    vert_pos.z = slip_rand(vert_pos.xy, 16)*0.1;
+    //vert_pos.z += rand(vert_pos.xy)*0.001;
+    
+    vec4 ngb1 = vec4(0);
+    ngb1.xy = vert_pos.xy + vec2(1/512.0, 0.00);
+    vec4 ngb2 = vec4(0);
+    ngb2.xy = vert_pos.xy + vec2(0.0, 1/512.0);
+    vec4 ngb3 = vec4(0);
+    ngb3.xy = vert_pos.xy + vec2(-.707/512.0, -.707/512.0);
+    ngb1.z = slip_rand(ngb1.xy, 16)*0.1;
+    ngb2.z = slip_rand(ngb2.xy, 16)*0.1;
+    ngb3.z = slip_rand(ngb3.xy, 16)*0.1;
+    var_normal =  calc_normal(vert_pos.xyz, ngb1.xyz, ngb2.xyz, ngb3.xyz);
+    
+    gl_Position = modelViewProjectionMatrix * vert_pos;
+    var_color = color * vec4(vec3(vert_pos.z*10),1);
+}
+
+void phase18() {
+    vec4 vert_pos = position;
+    vert_pos.z = slip_rand(vert_pos.xy, 16)*5;
+    //vert_pos.z += rand(vert_pos.xy)*0.001;
+    
+    vec4 ngb1 = vec4(0);
+    ngb1.xy = vert_pos.xy + vec2(1/512.0, 0.00);
+    vec4 ngb2 = vec4(0);
+    ngb2.xy = vert_pos.xy + vec2(0.0, 1/512.0);
+    vec4 ngb3 = vec4(0);
+    ngb3.xy = vert_pos.xy + vec2(-.707/512.0, -.707/512.0);
+    ngb1.z = slip_rand(ngb1.xy, 16)*5;
+    ngb2.z = slip_rand(ngb2.xy, 16)*5;
+    ngb3.z = slip_rand(ngb3.xy, 16)*5;
+    var_normal =  calc_normal(vert_pos.xyz, ngb1.xyz, ngb2.xyz, ngb3.xyz);
+    
+    gl_Position = modelViewProjectionMatrix * vert_pos;
+    var_color = color * vec4(vec3(vert_pos.z*10),1);
+}
 
 void phaseY() {
     //gl_TexCoord[0] = texcoord;
@@ -230,7 +278,7 @@ void phaseY() {
     float next = rand(ceil(vert_pos.xy*10)/10)*0.1;
     vec2 pos = (vert_pos.xy - floor(vert_pos.xy*10)/10) / (ceil(vert_pos.xy*10)/10 - floor(vert_pos.xy*10)/10);
     vert_pos.z = mix(prev, next, pos.x);
-    vertex_color = vec4(vec3(vert_pos.z*10), 1);
+    var_color = vec4(vec3(vert_pos.z*10), 1);
     gl_Position = modelViewProjectionMatrix * vert_pos;
 }
 
@@ -238,6 +286,16 @@ void main()
 {	
     switch (phase) {
         
+        case 18:
+            phase18();
+            break;
+        case 17:
+            phase17();
+            break;
+        case 16:
+        case 15:
+        case 14:
+        case 13:
         case 12:
             phase12();
             break;
@@ -278,4 +336,5 @@ void main()
             phase0();
             break;
     }
+    var_texcoord = texcoord;
 }
