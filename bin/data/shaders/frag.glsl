@@ -15,7 +15,7 @@ const int m = 16777216;
 const float PI = 3.14159265358979323846264;
 
 float sin_n(float val) {
-    return sin(val*31)*0.5+0.5;
+    return sin(val*31.4)*0.5+0.5;
 } 
 
 float cos_n(float val) {
@@ -85,7 +85,7 @@ float slip_rand(vec2 co, float step) {
 }
 
 vec4 normal_to_color(vec3 normal) {
-    return vec4((var_normal + vec3(1))/2., 1.0);
+    return vec4((normal + vec3(1))/2., 1.0);
 }
 
 void phase13() {
@@ -110,7 +110,26 @@ void phase17() {
 
 void phase18() {
     vec4 ncolor = normal_to_color(var_normal);
-    outputColor = vec4(var_normal.z, 0,0,1);
+    if (length(var_normal.xy) < 0.9) 
+    {
+        outputColor = vec4(vec3(1.0 - slip_rand(var_texcoord, 2048)*0.05), 1);// - vec4(vec3(slip_rand(var_texcoord, 2048))*0.1,1.0);
+    }
+    else {
+        outputColor.a = 1.0;
+        outputColor.rgb = vec3(0.077,0.029, 0.002) + vec3(slip_rand(var_texcoord, 2048)*0.05);
+    }
+}
+
+void phase19() {
+    vec4 ncolor = normal_to_color(var_normal);
+    if (length(var_normal.xy) < 0.9) 
+    {
+        outputColor = vec4(vec3(1.0 - slip_rand(var_texcoord, 2048)*0.05), 1);// - vec4(vec3(slip_rand(var_texcoord, 2048))*0.1,1.0);
+    }
+    else {
+        outputColor.a = 1.0;
+        outputColor.rgb = vec3(0.077,0.029, 0.002) + vec3(slip_rand(var_texcoord, 2048)*0.05);
+    }
 }
 
 void main (void)  
