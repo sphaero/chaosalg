@@ -4,6 +4,7 @@
 in vec4 var_color;
 in vec2 var_texcoord;
 in vec3 var_normal;
+in vec3 var_position;
 
 //output
 out vec4 outputColor;
@@ -13,6 +14,15 @@ const int a = 1140671485;
 const int c = 128201163;
 const int m = 16777216;
 const float PI = 3.14159265358979323846264;
+//material constants
+const vec3 m_ambient = vec3(0.1, 0.1, 0.1);
+const vec3 m_diffuse = vec3(0.8, 0.7, 0.6);
+const vec3 m_specular = vec3(0.8, 0., 0.);
+const float shininess = 32.0;
+//light constants
+const vec3 l_ambient = vec3(0.1, 0.1, 0.2);
+const vec3 l_diffuse = vec3(1, 1, 1);
+const vec3 l_specular = vec3(0.5, 0.8, 0.8);
 
 float sin_n(float val) {
     return sin(val*31.4)*0.5+0.5;
@@ -132,10 +142,32 @@ void phase19() {
     }
 }
 
+void phase20() {
+    
+    vec3 ambient = m_ambient * l_ambient;
+    
+    //diffuse calc
+    vec3 lightPos = vec3(0,0,0);
+    vec3 surf2light=normalize(lightPos-var_position);
+    float dcont=max(0.0,dot(var_normal,surf2light));
+    vec3 diffuse=dcont*(m_diffuse*l_diffuse);
+    
+    vec3 surf2view=normalize(-var_position);
+    vec3 reflection=reflect(-surf2light,var_normal);
+    float scont=pow(max(0.0,dot(surf2view,reflection)),shininess);
+    vec3 specular=scont*l_specular*m_specular;
+    
+    outputColor.a = 1.0;
+    outputColor.rgb = ambient+diffuse+specular;
+}
+
 void main (void)  
 {  
    switch (phase) {
         
+        case 20:
+            phase20();
+            break;
         case 18:
             phase18();
             break;

@@ -22,6 +22,7 @@ in vec2 texcoord;
 
 out vec4 var_color;
 out vec2 var_texcoord;
+out vec3 var_position;
 out vec3 var_normal;
 
 float sin_n(float val) {
@@ -275,7 +276,7 @@ void phase19() {
     //add fog
     vec4 vert_pos = position;
     vert_pos.z = slip_rand(vert_pos.xy, 16)*0.1;
-    vert_pos.z += rand(vert_pos.xy)*0.001;
+    //vert_pos.z += rand(vert_pos.xy)*0.001; //deze levert ellende met licht vast door afwijking in normals
     
     vec4 ngb1 = vec4(0);
     ngb1.xy = vert_pos.xy + vec2(1/1024.0, 0.00);
@@ -308,6 +309,7 @@ void main()
 {	
     switch (phase) {
         
+        case 20:
         case 19:
             phase19();
             break;
@@ -362,4 +364,5 @@ void main()
             break;
     }
     var_texcoord = texcoord;
+    var_position = vec3(modelViewMatrix * position);    //get the position of the vertex after translation, rotation, scaling
 }

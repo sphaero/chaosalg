@@ -267,14 +267,14 @@ void ofApp::phaseChanged(int &newPhase) {
         case 17:
         case 18:
         case 19:
-            _cam_pos = ofVec3f(0,0.0, 0.1);
-            _cam_ori = ofVec3f(0,0,0);
-            speed.set(10);
+            //_cam_pos = ofVec3f(0,0.0, 0.1);
+            //_cam_ori = ofVec3f(0,0,0);
+            //speed.set(10);
             break;
 
         default:
-            _cam_pos = ofVec3f(0,-0.6, 0.1);
-            _cam_ori = ofVec3f(75, 0, 0);
+            //_cam_pos = ofVec3f(0,-0.6, 0.1);
+            //_cam_ori = ofVec3f(75, 0, 0);
             break;
     }
 }
