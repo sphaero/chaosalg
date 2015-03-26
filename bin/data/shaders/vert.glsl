@@ -2,6 +2,8 @@
 #extension GL_EXT_gpu_shader4 : enable
 
 uniform int phase;
+uniform int subdiv;
+
 const int a = 1140671485;
 const int c = 128201163;
 const int m = 16777216;
@@ -94,12 +96,19 @@ float slip_rand(vec2 co, float step) {
     return ny;
 }
 
-vec3 calc_normal(vec3 pos, vec3 _ngb1, vec3 _ngb2, vec3 _ngb3) {
+vec3 calc_normal(vec3 _ngb1, vec3 _ngb2, vec3 _ngb3) {
     vec3 tangent = _ngb1 - _ngb3;
     vec3 bitangent = _ngb2 - _ngb3;
     return normalize(cross(tangent, bitangent));
     
     //return normalize(cross(_ngb2 - _ngb1, _ngb3 - _ngb1));
+}
+
+vec3 calc_quad_normal(vec3 v1, vec3 v2, vec3 v3, vec3 v4)
+{
+    vec3 norm1 = normalize(cross((v2-v1), (v3-v1)));
+    vec3 norm2 = normalize(cross((v3-v4), (v4-v1)));
+    return normalize((norm1 + norm2) * 0.5f);
 }
 
 // the most simple random number generator
@@ -235,18 +244,37 @@ void phase12() {
 void phase17() {
     vec4 vert_pos = position;
     vert_pos.z = slip_rand(vert_pos.xy, 16)*0.1;
-    //vert_pos.z += rand(vert_pos.xy)*0.001;
+    vert_pos.z += slip_rand(vert_pos.xy, 64)*0.03; //deze levert ellende met licht vast door afwijking in normals
     
-    vec4 ngb1 = vec4(0);
+    vec3 ngb1 = vert_pos.xyz;
+    ngb1.xy += vec2(1.0/subdiv, 0.0);
+    vec3 ngb2 = vert_pos.xyz;
+    ngb2.xy += vec2(0.0, 1.0/subdiv);
+    vec3 ngb3 = vert_pos.xyz;
+    ngb3.xy += vec2(-1.0/subdiv, 0);
+    vec3 ngb4 = vert_pos.xyz;
+    ngb4.xy += vec2(0, -1.0/subdiv);
+    /*
+    vec3 ngb1 = vec3(0);
     ngb1.xy = vert_pos.xy + vec2(1/1024.0, 0.00);
-    vec4 ngb2 = vec4(0);
+    vec3 ngb2 = vec3(0);
     ngb2.xy = vert_pos.xy + vec2(0.0, 1/1024.0);
-    vec4 ngb3 = vec4(0);
+    vec3 ngb3 = vec3(0);
     ngb3.xy = vert_pos.xy + vec2(-.707/1024.0, -.707/1024.0);
+    */
     ngb1.z = slip_rand(ngb1.xy, 16)*0.1;
+    ngb1.z += slip_rand(ngb1.xy, 64)*0.03;
+    //ngb1.z += lip_rand(ngb1.xy, 32)*0.05;
     ngb2.z = slip_rand(ngb2.xy, 16)*0.1;
+    ngb2.z += slip_rand(ngb2.xy, 64)*0.03;
+    //ngb2.z += lip_rand(ngb2.xy, 32)*0.05;
     ngb3.z = slip_rand(ngb3.xy, 16)*0.1;
-    var_normal =  calc_normal(vert_pos.xyz, ngb1.xyz, ngb2.xyz, ngb3.xyz);
+    ngb3.z += slip_rand(ngb3.xy, 64)*0.03;
+    //ngb3.z += lip_rand(ngb3.xy, 32)*0.05;
+    ngb4.z = slip_rand(ngb4.xy, 16)*0.1;
+    ngb4.z += slip_rand(ngb4.xy, 64)*0.03;
+    //var_normal = calc_normal(ngb1.xyz, ngb2.xyz, ngb3.xyz);
+    var_normal = calc_quad_normal(ngb1, ngb2, ngb3, ngb4);
     
     gl_Position = modelViewProjectionMatrix * vert_pos;
     var_color = color * vec4(vec3(vert_pos.z*10),1);
@@ -254,19 +282,36 @@ void phase17() {
 
 void phase18() {
     vec4 vert_pos = position;
-    vert_pos.z = slip_rand(vert_pos.xy, 16)*0.1;
-    vert_pos.z += rand(vert_pos.xy)*0.001;
+    vert_pos.z = slip_rand(vert_pos.xy, 16)*0.05;
+    vert_pos.z += slip_rand(vert_pos.xy, 64)*0.01;
+    if ( vert_pos.z > 0.03) vert_pos.z += slip_rand(vert_pos.xy, 512)*0.001;
     
-    vec4 ngb1 = vec4(0);
-    ngb1.xy = vert_pos.xy + vec2(1/1024.0, 0.00);
-    vec4 ngb2 = vec4(0);
-    ngb2.xy = vert_pos.xy + vec2(0.0, 1/1024.0);
-    vec4 ngb3 = vec4(0);
-    ngb3.xy = vert_pos.xy + vec2(-.707/1024.0, -.707/1024.0);
-    ngb1.z = slip_rand(ngb1.xy, 16)*0.1;
-    ngb2.z = slip_rand(ngb2.xy, 16)*0.1;
-    ngb3.z = slip_rand(ngb3.xy, 16)*0.1;
-    var_normal =  calc_normal(vert_pos.xyz, ngb1.xyz, ngb2.xyz, ngb3.xyz);
+    vec3 ngb1 = vert_pos.xyz;
+    ngb1.xy += vec2(1.0/subdiv, 0.0);
+    vec3 ngb2 = vert_pos.xyz;
+    ngb2.xy += vec2(0.0, 1.0/subdiv);
+    vec3 ngb3 = vert_pos.xyz;
+    ngb3.xy += vec2(-1.0/subdiv, 0);
+    vec3 ngb4 = vert_pos.xyz;
+    ngb4.xy += vec2(0, -1.0/subdiv);
+
+    ngb1.z = slip_rand(ngb1.xy, 16)*0.05;
+    ngb1.z += slip_rand(ngb1.xy, 64)*0.01;
+    if ( vert_pos.z > 0.03) ngb1.z += slip_rand(ngb1.xy, 512)*0.001;
+    //ngb1.z += lip_rand(ngb1.xy, 32)*0.05;
+    ngb2.z = slip_rand(ngb2.xy, 16)*0.05;
+    ngb2.z += slip_rand(ngb2.xy, 64)*0.01;
+    if ( vert_pos.z > 0.03) ngb2.z += slip_rand(ngb2.xy, 512)*0.001;
+    //ngb2.z += lip_rand(ngb2.xy, 32)*0.05;
+    ngb3.z = slip_rand(ngb3.xy, 16)*0.05;
+    ngb3.z += slip_rand(ngb3.xy, 64)*0.01;
+    if ( vert_pos.z > 0.03) ngb3.z += slip_rand(ngb3.xy, 512)*0.001;
+    //ngb3.z += lip_rand(ngb3.xy, 32)*0.05;
+    ngb4.z = slip_rand(ngb4.xy, 16)*0.05;
+    ngb4.z += slip_rand(ngb4.xy, 64)*0.01;
+    if ( vert_pos.z > 0.03) ngb4.z += slip_rand(ngb4.xy, 512)*0.001;
+    //var_normal = calc_normal(ngb1.xyz, ngb2.xyz, ngb3.xyz);
+    var_normal = calc_quad_normal(ngb1, ngb2, ngb3, ngb4);
     
     gl_Position = modelViewProjectionMatrix * vert_pos;
     var_color = color * vec4(vec3(vert_pos.z*10),1);
@@ -275,23 +320,46 @@ void phase18() {
 void phase19() {
     //add fog
     vec4 vert_pos = position;
-    vert_pos.z = slip_rand(vert_pos.xy, 16)*0.1;
-    //vert_pos.z += rand(vert_pos.xy)*0.001; //deze levert ellende met licht vast door afwijking in normals
+    vert_pos.z = slip_rand(vert_pos.xy, 16)*0.05;
+    vert_pos.z += slip_rand(vert_pos.xy, 64)*0.01;
+    if ( vert_pos.z > 0.03) vert_pos.z += slip_rand(vert_pos.xy, 512)*0.001;
     
-    vec4 ngb1 = vec4(0);
-    ngb1.xy = vert_pos.xy + vec2(1/1024.0, 0.00);
-    vec4 ngb2 = vec4(0);
-    ngb2.xy = vert_pos.xy + vec2(0.0, 1/1024.0);
-    vec4 ngb3 = vec4(0);
-    ngb3.xy = vert_pos.xy + vec2(-.707/1024.0, -.707/1024.0);
-    ngb1.z = slip_rand(ngb1.xy, 16)*0.1;
-    ngb2.z = slip_rand(ngb2.xy, 16)*0.1;
-    ngb3.z = slip_rand(ngb3.xy, 16)*0.1;
-    var_normal =  calc_normal(vert_pos.xyz, ngb1.xyz, ngb2.xyz, ngb3.xyz);
+    vec3 ngb1 = vert_pos.xyz;
+    ngb1.xy += vec2(1.0/subdiv, 0.0);
+    vec3 ngb2 = vert_pos.xyz;
+    ngb2.xy += vec2(0.0, 1.0/subdiv);
+    vec3 ngb3 = vert_pos.xyz;
+    ngb3.xy += vec2(-1.0/subdiv, 0);
+    vec3 ngb4 = vert_pos.xyz;
+    ngb4.xy += vec2(0, -1.0/subdiv);
+
+    ngb1.z = slip_rand(ngb1.xy, 16)*0.05;
+    ngb1.z += slip_rand(ngb1.xy, 64)*0.01;
+    if ( vert_pos.z > 0.03) ngb1.z += slip_rand(ngb1.xy, 512)*0.001;
+    //ngb1.z += lip_rand(ngb1.xy, 32)*0.05;
+    ngb2.z = slip_rand(ngb2.xy, 16)*0.05;
+    ngb2.z += slip_rand(ngb2.xy, 64)*0.01;
+    if ( vert_pos.z > 0.03) ngb2.z += slip_rand(ngb2.xy, 512)*0.001;
+    //ngb2.z += lip_rand(ngb2.xy, 32)*0.05;
+    ngb3.z = slip_rand(ngb3.xy, 16)*0.05;
+    ngb3.z += slip_rand(ngb3.xy, 64)*0.01;
+    if ( vert_pos.z > 0.03) ngb3.z += slip_rand(ngb3.xy, 512)*0.001;
+    //ngb3.z += lip_rand(ngb3.xy, 32)*0.05;
+    ngb4.z = slip_rand(ngb4.xy, 16)*0.05;
+    ngb4.z += slip_rand(ngb4.xy, 64)*0.01;
+    if ( vert_pos.z > 0.03) ngb4.z += slip_rand(ngb4.xy, 512)*0.001;
+    //var_normal = calc_normal(ngb1.xyz, ngb2.xyz, ngb3.xyz);
+    var_normal = calc_quad_normal(ngb1, ngb2, ngb3, ngb4);
     
     gl_Position = modelViewProjectionMatrix * vert_pos;
     float fog_val = clamp(gl_Position.z, 0.0, 1.0);
     var_color = color * vec4(vert_pos.z*10, fog_val, 0, 1);
+}
+
+void phase22(){
+    gl_Position = modelViewProjectionMatrix * position;
+    var_normal = normal;
+    var_color = color * vec4(position.z*10, 0, 0, 1);
 }
 
 void phaseY() {
@@ -309,6 +377,10 @@ void main()
 {	
     switch (phase) {
         
+        case 22:
+            phase22();
+            break;
+        case 21:
         case 20:
         case 19:
             phase19();
