@@ -24,11 +24,13 @@ class ofApp : public ofBaseApp{
 
         ofShader shader;
         ofVboMesh mesh;
+        int subdiv = 1024;
         ofCamera cam;
         float rotPos;
 		ofQuaternion curRot;
 		ofVec2f lastMouse;
         of3dPrimitive origin;
+        ofNode light;
         
         void setupParams();
         ofxPanel            gui;
@@ -37,6 +39,7 @@ class ofApp : public ofBaseApp{
         ofParameter<float> speed;
         ofParameter<int> phase;
         ofParameter<bool> debug;
+        ofParameter<ofVec3f> lightPos;
         
         void updateCam();
         void updatePhase();
@@ -49,4 +52,6 @@ class ofApp : public ofBaseApp{
 
         //oculus
         ofxOculusDK2        oculusRift;
+        
+        ofImage normalmap;
 };

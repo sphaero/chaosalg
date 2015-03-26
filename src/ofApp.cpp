@@ -7,6 +7,7 @@ void ofApp::setup(){
     //ofSetVerticalSync(true);
     ofEnableAlphaBlending();
     
+    normalmap.load("normaldepth.jpg");
 	shader.load("shaders/vert.glsl", "shaders/frag.glsl"); 
     
     ofBackground(70);
@@ -17,6 +18,8 @@ void ofApp::setup(){
 
     // needed for programmable renderer
     ofViewport(ofGetNativeViewport());
+    
+    light.setPosition(1,1,1);
     
     // setup params & gui
     setupParams();
@@ -29,12 +32,12 @@ void ofApp::setup(){
     cam.setOrientation(ofVec3f(75,0,0));
     cam.setNearClip(0.001);
     cam.setFarClip(10);
-    
+        
     //oculusRift.lockView = false;
     //oculusRift.setUsePredictedOrientation(true);
 
     // generate a plane
-    int rows = 512, columns = 512;
+    int rows = subdiv, columns = subdiv;
     int width = 1, height = 1;
     ofVec3f vert;
     ofVec3f normal(0, 0, 1); // always facing forward //
@@ -114,19 +117,27 @@ void ofApp::draw_scene(){
         ofTranslate(1,1);
         origin.drawAxes(0.1);
         ofTranslate(-0.5,-0.5);
+        light.setPosition(lightPos.get());
+        light.draw();
+        ofBackground(70);
+        ofDrawLine(origin.getPosition(),lightPos.get()); 
     }
     
+    normalmap.getTextureReference().bind();
     shader.begin();
     ofTranslate(-0.5, -0.5, 0);
     ofColor(255);
     mesh.draw();
     // set phase in shader
     shader.setUniform1i("phase", phase.get());
+    shader.setUniform3f("lightPos", lightPos.get());
+    shader.setUniform1i("subdiv", subdiv);
     
     // make light direction slowly rotate
     shader.setUniform3f("lightDir", sin(ofGetElapsedTimef()/10), cos(ofGetElapsedTimef()/10), 0);
 
     shader.end();
+    normalmap.getTextureReference().unbind();
 	ofPopStyle();
 }
 
@@ -237,6 +248,7 @@ void ofApp::setupParams() {
     parameters.add(speed.set("lerpspeed", 9, 1, 15));
     parameters.add(phase.set("phase", 0, 0, 20));
     parameters.add(debug.set("debug", true));
+    parameters.add(lightPos.set("lightPos", light.getPosition(), ofVec3f(-10), ofVec3f(10)));
     //settings.load("settings.xml");
     //settings.deserialize(parameters);
     gui.setup(parameters);
