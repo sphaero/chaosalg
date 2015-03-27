@@ -111,6 +111,13 @@ float slip_rand(vec2 co, float step) {
     return ny;
 }
 
+vec3 calc_quad_normal(vec3 v1, vec3 v2, vec3 v3, vec3 v4)
+{
+    vec3 norm1 = normalize(cross((v2-v1), (v3-v1)));
+    vec3 norm2 = normalize(cross((v3-v4), (v4-v1)));
+    return normalize((norm1 + norm2) * 0.5f);
+}
+
 vec3 basic_phong(vec3 normal, vec3 light_dir, vec3 view_dir, vec3 diffuseColor, vec3 specularColor) 
 {
     vec3 reflect_dir = reflect(light_dir, normal);
@@ -184,9 +191,43 @@ void phase19() {
 
 void phase20() {
     
-    vec3 surf2view=normalize(-var_position);
+    //calculate a normal for the fragment
+    vec3 vert_pos = var_position;
+    vert_pos.z += slip_rand(vert_pos.xy, 4096)*0.0005;
+    
+    vec3 ngb1 = vert_pos.xyz;
+    ngb1.xy += vec2(1.0/4096.0, 0.0);
+    vec3 ngb2 = vert_pos.xyz;
+    ngb2.xy += vec2(0.0, 1.0/4096.0);
+    vec3 ngb3 = vert_pos.xyz;
+    ngb3.xy += vec2(-1.0/4096.0, 0);
+    vec3 ngb4 = vert_pos.xyz;
+    ngb4.xy += vec2(0, -1.0/4096.0);
+
+    ngb1.z += slip_rand(ngb1.xy, 4096)*0.0005;
+    ngb2.z += slip_rand(ngb2.xy, 4096)*0.0005;
+    ngb3.z += slip_rand(ngb3.xy, 4096)*0.0005;
+    ngb4.z += slip_rand(ngb4.xy, 4096)*0.0005;
+    //var_normal = calc_normal(ngb1.xyz, ngb2.xyz, ngb3.xyz);
+    vec3 frag_normal = calc_quad_normal(ngb1, ngb2, ngb3, ngb4)*0.1;
+    //if (vert_pos.z < 0.03) frag_normal *= 0.01;
+    frag_normal = normalize(var_normal + frag_normal);
+    
+    vec3 surf2view=normalize(-vert_pos);
+    vec3 specColor = m_specular;
+    vec3 diffColor = vec3(1.0 - slip_rand(var_texcoord, 2048)*0.05); //white snow
+    float horizon_length = length(frag_normal.xy);
+    if (horizon_length > 0.6) 
+    {
+        float alpha = smoothstep(0.6, 0.64, horizon_length);
+        frag_normal *= clamp(horizon_length, 0.6, 0.8);
+        specColor = vec3(0);
+        vec3 rockDiffuse = vec3(0.077,0.029, 0.002) + vec3(slip_rand(var_texcoord, 2048)*0.05);
+        diffColor = mix(diffColor, rockDiffuse, alpha);// - vec4(vec3(slip_rand(var_texcoord, 2048))*0.1,1.0);
+    }
+    vec3 fog = vec3(0.7, 0.8, 1.0);
     outputColor.a = 1.0;
-    outputColor.rgb = basic_phong(normalize(var_normal), normalize(-lightPos), surf2view, m_diffuse, m_specular);
+    outputColor.rgb = mix(basic_phong(frag_normal, normalize(-lightPos), surf2view, diffColor, specColor), fog, var_color.g);
 }
 
 void phase21() {
