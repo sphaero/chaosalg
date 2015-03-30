@@ -27,12 +27,12 @@ const float PI = 3.14159265358979323846264;
 //material constants
 const vec3 m_ambient = vec3(0.28, 0.3, 0.33);
 const vec3 m_diffuse = vec3(0.8, 0.7, 0.6);
-const vec3 m_specular = vec3(1.0, 0., 0.);
-const float shininess = 64.0;
+const vec3 m_specular = vec3(1.0, .9, .9);
+const float shininess = 256.0;
 //light constants
 const vec3 l_ambient = vec3(0.5, 0.5, 0.6);
 const vec3 l_diffuse = vec3(0.7, 0.7, 0.7);
-const vec3 l_specular = vec3(1., 0., 0.);
+const vec3 l_specular = vec3(0.5, .6, .9);
 
 float sin_n(float val) {
     return sin(val*31.4)*0.5+0.5;

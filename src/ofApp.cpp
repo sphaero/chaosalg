@@ -9,7 +9,7 @@ void ofApp::setup(){
     
     normalmap.load("normaldepth.jpg");
 	shader.load("shaders/vert.glsl", "shaders/frag.glsl"); 
-    
+    sphereShader.load("shaders/sphere_vert.glsl", "shaders/sphere_frag.glsl");
     ofBackground(1,25,255);
     ofSetColor(255);
 
@@ -25,13 +25,13 @@ void ofApp::setup(){
     setupParams();
     int p=0;
     phaseChanged(p);
-    _cam_pos = ofVec3f(0,-0.6, 0.1);
+    _cam_pos = ofVec3f(0.5,-0.6, 0.1);
     _cam_ori = ofVec3f(75, 0, 0);
 
     cam.setPosition(0,-0.6, 0.1);
     cam.setOrientation(ofVec3f(75,0,0));
     cam.setNearClip(0.001);
-    cam.setFarClip(1);
+    cam.setFarClip(3);
         
     //oculusRift.lockView = false;
     //oculusRift.setUsePredictedOrientation(true);
@@ -70,6 +70,11 @@ void ofApp::setup(){
             mesh.addIndex((y+1)*columns + x);
         }
     }
+    // generate a spere for background
+    sphere.setRadius( 2.0 );
+    sphere.setUseVbo(true);
+    sphere.setScale(-1);
+    sphere.setOrientation(ofVec3f(90,0,0));
 }
 
 //--------------------------------------------------------------
@@ -123,6 +128,10 @@ void ofApp::draw_scene(){
         ofDrawLine(origin.getPosition(),lightPos.get()); 
     }
     
+    sphereShader.begin();
+    sphere.draw();
+    sphereShader.end();
+
     normalmap.getTextureReference().bind();
     shader.begin();
     ofColor(255);
@@ -157,6 +166,8 @@ void ofApp::updateCam() {
     source.y = ofLerp(source.y, _cam_pos.y, pow(2,-speed.get()));
     source.z = ofLerp(source.z, _cam_pos.z, pow(2,-speed.get()));
     cam.setPosition(source);
+    // update sphere
+    sphere.setPosition(source.x, source.y, -0.1);
     
     /*source = cam.getOrientationEuler();
     source.x = ofLerp(source.x, _cam_ori.x, pow(2,-speed.get()));
@@ -203,6 +214,7 @@ void ofApp::keyReleased(int key){
     if (oculusRift.isSetup()) oculusRift.dismissSafetyWarning();
     if (key == ' ') {
         shader.load("shaders/vert.glsl", "shaders/frag.glsl");
+        sphereShader.load("shaders/sphere_vert.glsl", "shaders/sphere_frag.glsl");
     }
 }
 
@@ -264,7 +276,7 @@ void ofApp::phaseChanged(int &newPhase) {
         case 1:
         case 6:
         case 7:
-            _cam_pos = ofVec3f(0,-1.1, 0);
+            _cam_pos = ofVec3f(0.5,-1.1, 0.1);
             _cam_ori = ofVec3f(90,0,0);
             break;
         case 8:

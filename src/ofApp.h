@@ -24,6 +24,8 @@ class ofApp : public ofBaseApp{
 
         ofShader shader;
         ofVboMesh mesh;
+        ofShader sphereShader;
+        ofSpherePrimitive sphere;
         int subdiv = 1024;
         ofCamera cam;
         float rotPos;
