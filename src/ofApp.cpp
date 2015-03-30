@@ -10,7 +10,7 @@ void ofApp::setup(){
     normalmap.load("normaldepth.jpg");
 	shader.load("shaders/vert.glsl", "shaders/frag.glsl"); 
     
-    ofBackground(70);
+    ofBackground(1,25,255);
     ofSetColor(255);
 
     oculusRift.baseCamera = &cam; //attach to your camera
@@ -31,7 +31,7 @@ void ofApp::setup(){
     cam.setPosition(0,-0.6, 0.1);
     cam.setOrientation(ofVec3f(75,0,0));
     cam.setNearClip(0.001);
-    cam.setFarClip(10);
+    cam.setFarClip(1);
         
     //oculusRift.lockView = false;
     //oculusRift.setUsePredictedOrientation(true);
@@ -104,7 +104,7 @@ void ofApp::draw() {
     // draw ui
     ofDisableDepthTest();
     gui.draw();
-	ofDrawBitmapString("fps: " + ofToString((int)ofGetFrameRate()) + " ori: " + ofToString(cam.getOrientationEuler()), 20, 10);
+	ofDrawBitmapString("fps: " + ofToString((int)ofGetFrameRate()) + " pos: " + ofToString(cam.getPosition()), 20, 10);
 }
 
 //--------------------------------------------------------------
@@ -119,18 +119,18 @@ void ofApp::draw_scene(){
         ofTranslate(-0.5,-0.5);
         light.setPosition(lightPos.get());
         light.draw();
-        ofBackground(70);
+        ofBackground(1,25,255);
         ofDrawLine(origin.getPosition(),lightPos.get()); 
     }
     
     normalmap.getTextureReference().bind();
     shader.begin();
-    ofTranslate(-0.5, -0.5, 0);
     ofColor(255);
     mesh.draw();
     // set phase in shader
     shader.setUniform1i("phase", phase.get());
     shader.setUniform3f("lightPos", lightPos.get());
+    shader.setUniform3f("camPos", cam.getPosition());
     shader.setUniform1i("subdiv", subdiv);
     
     // make light direction slowly rotate
