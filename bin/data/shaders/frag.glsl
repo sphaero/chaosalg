@@ -32,8 +32,9 @@ const float shininess = 256.0;
 //light constants
 const vec3 l_ambient = vec3(0.5, 0.5, 0.6);
 const vec3 l_diffuse = vec3(0.7, 0.7, 0.7);
-const vec3 l_specular = vec3(0.5, .6, .9);
+const vec3 l_specular = vec3(0.3, .4, .7);
 
+// begin helper methods
 float sin_n(float val) {
     return sin(val*31.4)*0.5+0.5;
 } 
@@ -132,66 +133,68 @@ vec4 normal_to_color(vec3 normal) {
     return vec4((normal + vec3(1))/2., 1.0);
 }
 
-void phase13() {
-    outputColor = var_color * vec4(vec3(rand(var_texcoord)),1.0);
+// end helper methods
+
+void normal_color() {
+    outputColor = normal_to_color(var_normal);
 }
 
-void phase14() {
-    outputColor = var_color * vec4(vec3(ip_rand(var_texcoord, 2048)),1.0);
+void noise_tex() {
+    // add noise texture
+    vec3 surf2view = normalize(camPos.xyz - var_position);
+    vec3 diffuseColor = vec3(rand(var_texcoord));
+    outputColor.a = 1.0;
+    outputColor.rgb = basic_phong(var_normal, normalize(-lightPos), surf2view, diffuseColor, m_specular);
 }
 
-void phase15() {
-    outputColor = var_color * vec4(vec3(lip_rand(var_texcoord, 2048)),1.0);
+void noise_step_tex() {
+    // add noise stepping texture
+    vec3 surf2view = normalize(camPos.xyz - var_position);
+    vec3 diffuseColor = vec3(ip_rand(var_texcoord, 2048));
+    outputColor.a = 1.0;
+    outputColor.rgb = basic_phong(var_normal, normalize(-lightPos), surf2view, diffuseColor, m_specular);
 }
 
-void phase16() {
-    outputColor = var_color * vec4(vec3(slip_rand(var_texcoord, 2048)),1.0);
+void noise_interpol_tex() {
+    // add noise interpolation texture
+    vec3 surf2view = normalize(camPos.xyz - var_position);
+    vec3 diffuseColor = vec3(lip_rand(var_texcoord, 2048));
+    outputColor.a = 1.0;
+    outputColor.rgb = basic_phong(var_normal, normalize(-lightPos), surf2view, diffuseColor, m_specular);
 }
 
-void phase17() {
-    //if (var_normal.z > 0.9) {
-    //    outputColor = vec4(var_normal,1);
-    //}
-    //else {
-        outputColor = normal_to_color(var_normal);
-    //}
+void noise_sin_interpol_tex() {
+    // add noise sinus interpolation texture
+    vec3 surf2view = normalize(camPos.xyz - var_position);
+    vec3 diffuseColor = vec3(slip_rand(var_texcoord, 2048));
+    outputColor.a = 1.0;
+    outputColor.rgb = basic_phong(var_normal, normalize(-lightPos), surf2view, diffuseColor, m_specular);
 }
 
-void phase18() {
-    vec3 surf2view=normalize(-var_position);
+void rocky_tex() {
+    vec3 surf2view = normalize(camPos.xyz - var_position);
+    vec3 diffuseColor = vec3(0.077,0.029, 0.002) + vec3(slip_rand(var_texcoord, 2048)*0.05);
+    outputColor.a = 1.0;
+    outputColor.rgb = basic_phong(var_normal, normalize(-lightPos), surf2view, diffuseColor, vec3(0));
+}
+
+void rocky_snow_slope() {
+    vec3 surf2view = normalize(camPos.xyz - var_position);
     vec3 specColor = m_specular;
     vec3 diffColor = vec3(1.0 - slip_rand(var_texcoord, 2048)*0.05); //white snow
     float horizon_length = length(var_normal.xy);
-    if (horizon_length > 0.7) 
+    if (horizon_length > 0.6) 
     {
-        float alpha = smoothstep(0.7, 0.75, horizon_length);
+        float alpha = smoothstep(0.6, 0.64, horizon_length);
         specColor = vec3(0);
         vec3 rockDiffuse = vec3(0.077,0.029, 0.002) + vec3(slip_rand(var_texcoord, 2048)*0.05);
-        diffColor = mix(diffColor, rockDiffuse, alpha);// - vec4(vec3(slip_rand(var_texcoord, 2048))*0.1,1.0);
+        diffColor = mix(diffColor, rockDiffuse, alpha);
     }
     outputColor.a = 1.0;
-    outputColor.rgb = basic_phong(var_normal, normalize(-lightPos), surf2view, diffColor, specColor);
+    outputColor.rgb = basic_phong(var_normal, normalize(-lightPos), surf2view, diffColor, m_specular);
 }
 
-void phase19() {
-    vec3 surf2view= normalize(-var_position);
-    vec3 specColor = m_specular;
-    vec3 diffColor = vec3(1.0 - slip_rand(var_texcoord, 2048)*0.05); //white snow
-    float horizon_length = length(var_normal.xy);
-    if (horizon_length > 0.7) 
-    {
-        float alpha = smoothstep(0.7, 0.75, horizon_length);
-        specColor = vec3(0);
-        vec3 rockDiffuse = vec3(0.077,0.029, 0.002) + vec3(slip_rand(var_texcoord, 2048)*0.05);
-        diffColor = mix(diffColor, rockDiffuse, alpha);// - vec4(vec3(slip_rand(var_texcoord, 2048))*0.1,1.0);
-    }
-    vec3 fog = vec3(0.7, 0.8, 1.0);
-    outputColor.a = 1.0;
-    outputColor.rgb = mix(basic_phong(var_normal, normalize(-lightPos), surf2view, diffColor, specColor), fog, var_color.g);
-}
-
-void phase20() {
-    
+void slope_normal() {
     //calculate a normal for the fragment
     vec3 vert_pos = var_position;
     vert_pos.z += slip_rand(vert_pos.xy, 4096)*0.0005;
@@ -212,8 +215,43 @@ void phase20() {
     vec3 frag_normal = calc_quad_normal(ngb1, ngb2, ngb3, ngb4)*0.1;
     frag_normal = normalize(var_normal + frag_normal);
     
-    //vec4 vert_view_pos = vec4(vert_pos,0) * modelViewMatrix;
-    vec3 surf2view=normalize(camPos.xyz - vert_pos); //the vector between surface and view
+    vec3 surf2view = normalize(camPos.xyz - var_position);
+    vec3 specColor = m_specular;
+    vec3 diffColor = vec3(1.0 - slip_rand(var_texcoord, 2048)*0.05); //white snow
+    float horizon_length = length(frag_normal.xy);
+    if (horizon_length > 0.6) 
+    {
+        float alpha = smoothstep(0.6, 0.64, horizon_length);
+        specColor = vec3(0);
+        vec3 rockDiffuse = vec3(0.077,0.029, 0.002) + vec3(slip_rand(var_texcoord, 2048)*0.05);
+        diffColor = mix(diffColor, rockDiffuse, alpha);
+    }
+    outputColor.a = 1.0;
+    outputColor.rgb = basic_phong(frag_normal, normalize(-lightPos), surf2view, diffColor, m_specular);
+}
+
+void slope_normal_enhanced() {
+    //calculate a normal for the fragment
+    vec3 vert_pos = var_position;
+    vert_pos.z += slip_rand(vert_pos.xy, 4096)*0.0005;
+    
+    vec3 ngb1 = vert_pos.xyz;
+    ngb1.xy += vec2(1.0/4096.0, 0.0);
+    vec3 ngb2 = vert_pos.xyz;
+    ngb2.xy += vec2(0.0, 1.0/4096.0);
+    vec3 ngb3 = vert_pos.xyz;
+    ngb3.xy += vec2(-1.0/4096.0, 0);
+    vec3 ngb4 = vert_pos.xyz;
+    ngb4.xy += vec2(0, -1.0/4096.0);
+
+    ngb1.z += slip_rand(ngb1.xy, 4096)*0.0005;
+    ngb2.z += slip_rand(ngb2.xy, 4096)*0.0005;
+    ngb3.z += slip_rand(ngb3.xy, 4096)*0.0005;
+    ngb4.z += slip_rand(ngb4.xy, 4096)*0.0005;
+    vec3 frag_normal = calc_quad_normal(ngb1, ngb2, ngb3, ngb4)*0.1;
+    frag_normal = normalize(var_normal + frag_normal);
+    
+    vec3 surf2view = normalize(camPos.xyz - var_position);
     vec3 specColor = m_specular;
     vec3 diffColor = vec3(1.0 - slip_rand(var_texcoord, 2048)*0.05); //white snow
     float horizon_length = length(frag_normal.xy);
@@ -223,76 +261,85 @@ void phase20() {
         frag_normal *= clamp(horizon_length, 0.6, 0.8);
         specColor = vec3(0);
         vec3 rockDiffuse = vec3(0.077,0.029, 0.002) + vec3(slip_rand(var_texcoord, 2048)*0.05);
-        diffColor = mix(diffColor, rockDiffuse, alpha);// - vec4(vec3(slip_rand(var_texcoord, 2048))*0.1,1.0);
+        diffColor = mix(diffColor, rockDiffuse, alpha);
+    }
+    outputColor.a = 1.0;
+    outputColor.rgb = basic_phong(frag_normal, normalize(-lightPos), surf2view, diffColor, m_specular);
+}
+
+void landscape_fog() {
+    //calculate a normal for the fragment
+    vec3 vert_pos = var_position;
+    vert_pos.z += slip_rand(vert_pos.xy, 4096)*0.0005;
+    
+    vec3 ngb1 = vert_pos.xyz;
+    ngb1.xy += vec2(1.0/4096.0, 0.0);
+    vec3 ngb2 = vert_pos.xyz;
+    ngb2.xy += vec2(0.0, 1.0/4096.0);
+    vec3 ngb3 = vert_pos.xyz;
+    ngb3.xy += vec2(-1.0/4096.0, 0);
+    vec3 ngb4 = vert_pos.xyz;
+    ngb4.xy += vec2(0, -1.0/4096.0);
+
+    ngb1.z += slip_rand(ngb1.xy, 4096)*0.0005;
+    ngb2.z += slip_rand(ngb2.xy, 4096)*0.0005;
+    ngb3.z += slip_rand(ngb3.xy, 4096)*0.0005;
+    ngb4.z += slip_rand(ngb4.xy, 4096)*0.0005;
+    vec3 frag_normal = calc_quad_normal(ngb1, ngb2, ngb3, ngb4)*0.1;
+    frag_normal = normalize(var_normal + frag_normal);
+    
+    vec3 surf2view = normalize(camPos.xyz - var_position);
+    vec3 specColor = m_specular;
+    vec3 diffColor = vec3(1.0 - slip_rand(var_texcoord, 2048)*0.05); //white snow
+    float horizon_length = length(frag_normal.xy);
+    if (horizon_length > 0.6) 
+    {
+        float alpha = smoothstep(0.6, 0.64, horizon_length);
+        frag_normal *= clamp(horizon_length, 0.6, 0.8);
+        vec3 rockDiffuse = vec3(0.077,0.029, 0.002) + vec3(slip_rand(var_texcoord, 2048)*0.05);
+        diffColor = mix(diffColor, rockDiffuse, alpha);
+        specColor = mix(specColor, vec3(0), alpha);
     }
     vec3 fog = vec3(0.7, 0.8, 1.0);
     outputColor.a = 1.0;
     outputColor.rgb = mix(basic_phong(frag_normal, normalize(-lightPos), surf2view, diffColor, specColor), fog, var_color.g);
 }
 
-void phase21() {
-    
-    //mat4 invView = inverse(modelViewMatrix);
-    //vec3 cam_world_pos = invView[3].xyz; //get cam world pos from inv modelview matrix
-    vec3 surf2view=normalize(camPos.xyz - var_position);
-    outputColor.a = 1.0;
-    outputColor.rgb = basic_phong(var_normal, normalize(-lightPos), surf2view, m_diffuse, m_specular);
-    //if (distance(eye_position.xy, vec2(0)) < 0.1) 
-    //if (distance(vec2(camPos.xy), var_position.xy) < 0.1) 
-    //{
-    //    outputColor.rgb = normal_to_color(surf2view).rgb;
-    //}
-    outputColor.rg = vec2(0);//gl_FragCoord.xy/vec2(1280,720);
-    outputColor.b = abs(gl_FragCoord.z*1.);
-    if (outputColor.b > 1.0) outputColor.rg = gl_FragCoord.xy/vec2(1280,720);
-}
-
-void phase22() {
-    //vec3 rnd_normal = normalize(var_normal + vec3(cos(var_texcoord.x*314), sin(var_texcoord.y*314), 1));
-    vec3 rnd_normal = normalize(var_normal + noise3(var_texcoord));
-    //vec3 rnd_normal = normalize(vec3(pow(sin_n(var_texcoord*10),vec2(10)),0) + var_normal);
-    //vec3 rnd_normal = normalize(texture(tex0, var_texcoord).xyz*2.0 - 1.0);
-    vec3 surf2view=normalize(-var_position);
-    outputColor.a = 1.0;
-    outputColor.rgb = basic_phong(rnd_normal, normalize(-lightPos), surf2view, m_diffuse, m_specular);
-}
-
 void main (void)  
 {  
    switch (phase) {
         
-        case 22:
-            phase22();
-            break;
         case 21:
-            phase21();
+            landscape_fog();
             break;
         case 20:
-            phase20();
+            slope_normal_enhanced();
             break;
         case 19:
-            phase19();
+            slope_normal();
             break;
         case 18:
-            phase18();
+            rocky_snow_slope();
             break;
         case 17:
-            phase17();
+            rocky_tex();
             break;
-        case 16:
-            phase16();
+        case 16: // sinus interpol tex
+            noise_sin_interpol_tex();
             break;
-        case 15:
-            phase15();
+        case 15: // interpol tex
+            noise_interpol_tex();
             break;
-        case 14:
-            phase14();
+        case 14: // stepping tex
+            noise_step_tex();
             break;
-        case 13:
-            phase13();
+        case 13: // noise tex
+            noise_tex();
             break;
         default:
-            outputColor = var_color;
+            vec3 surf2view = normalize(camPos.xyz - var_position);
+            outputColor.a = 1.0;
+            outputColor.rgb = basic_phong(var_normal, normalize(-lightPos), surf2view, var_color.rgb, vec3(0));
             break;
     }
 }

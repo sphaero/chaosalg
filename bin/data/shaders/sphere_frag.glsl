@@ -21,6 +21,6 @@ void main() {
     vec3 color = var_color.rgb;
     vec3 l_pos = normalize(vec3(-lightPos.xz, lightPos.y));
     float sun = clamp( dot(l_pos,normalize(var_normal)), 0.0, 1.0 );
-    color += 0.75*vec3(1.0,.8,0.5)*pow( sun, 256.0 );
+    color += 0.75*vec3(1.0,.8,0.5)*pow( sun, 512.0 );
     outputColor = vec4(color,1);
 }

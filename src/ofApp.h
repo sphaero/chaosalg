@@ -42,6 +42,7 @@ class ofApp : public ofBaseApp{
         ofParameter<int> phase;
         ofParameter<bool> debug;
         ofParameter<ofVec3f> lightPos;
+        ofParameter<float> seed;
         
         void updateCam();
         void updatePhase();

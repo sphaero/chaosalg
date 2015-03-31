@@ -142,6 +142,7 @@ void ofApp::draw_scene(){
     shader.setUniform3f("lightPos", lightPos.get());
     shader.setUniform3f("camPos", cam.getPosition());
     shader.setUniform1i("subdiv", subdiv);
+    shader.setUniform1i("seed", seed.get());
     
     // make light direction slowly rotate
     shader.setUniform3f("lightDir", sin(ofGetElapsedTimef()/10), cos(ofGetElapsedTimef()/10), 0);
@@ -262,6 +263,7 @@ void ofApp::setupParams() {
     parameters.add(phase.set("phase", 0, 0, 20));
     parameters.add(debug.set("debug", true));
     parameters.add(lightPos.set("lightPos", light.getPosition(), ofVec3f(-10), ofVec3f(10)));
+    parameters.add(seed.set("seed", 12.9898, 0.f, 32.f));
     //settings.load("settings.xml");
     //settings.deserialize(parameters);
     gui.setup(parameters);
@@ -275,11 +277,14 @@ void ofApp::phaseChanged(int &newPhase) {
     switch (newPhase) {
         case 0:
         case 1:
-        case 6:
-        case 7:
-            _cam_pos = ofVec3f(0.5,-1.1, 0.1);
+        case 4:
+            _cam_pos = ofVec3f(0.5,-0.6, 0.15);
             _cam_ori = ofVec3f(90,0,0);
             break;
+        case 6:
+        // start moving over noise
+            _cam_pos = ofVec3f(0.5,-0.6, 0.1);
+            _cam_ori = ofVec3f(0,0,0);
         case 8:
         case 9:
         case 10:
