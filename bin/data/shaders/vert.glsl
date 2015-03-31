@@ -325,6 +325,7 @@ void landscape_normal_detail_height() {
 
     gl_Position = modelViewProjectionMatrix * vert_pos;
     var_color = color;
+    var_position = vert_pos.xyz;
 }
 
 void landscape_fog() {
@@ -364,7 +365,8 @@ void landscape_fog() {
 
     gl_Position = modelViewProjectionMatrix * vert_pos;
     float fog_val = clamp(gl_Position.z, 0.0, 1.0);
-    var_color = color * vec4(vert_pos.z*10, fog_val, 0, 1);
+    var_color = color * vec4(vert_pos.z*20, fog_val, 0, 1);
+    var_position = vert_pos.xyz;
 }
 
 void main()
@@ -373,6 +375,7 @@ void main()
         
         case 21:
             landscape_fog();
+            break;
         case 20:
         case 19:
         case 18:
