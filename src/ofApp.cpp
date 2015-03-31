@@ -129,6 +129,7 @@ void ofApp::draw_scene(){
     }
     
     sphereShader.begin();
+    sphereShader.setUniform3f("lightPos", lightPos.get());
     sphere.draw();
     sphereShader.end();
 
