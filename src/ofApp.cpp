@@ -7,7 +7,6 @@ void ofApp::setup(){
     //ofSetVerticalSync(true);
     ofEnableAlphaBlending();
     
-    normalmap.load("normaldepth.jpg");
 	shader.load("shaders/vert.glsl", "shaders/frag.glsl"); 
     sphereShader.load("shaders/sphere_vert.glsl", "shaders/sphere_frag.glsl");
     ofBackground(1,25,255);
@@ -132,7 +131,6 @@ void ofApp::draw_scene(){
     sphere.draw();
     sphereShader.end();
 
-    normalmap.getTextureReference().bind();
     shader.begin();
     ofColor(255);
     mesh.draw();
@@ -147,7 +145,6 @@ void ofApp::draw_scene(){
     shader.setUniform3f("lightDir", sin(ofGetElapsedTimef()/10), cos(ofGetElapsedTimef()/10), 0);
 
     shader.end();
-    normalmap.getTextureReference().unbind();
 	ofPopStyle();
 }
 

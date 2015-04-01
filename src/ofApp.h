@@ -55,6 +55,4 @@ class ofApp : public ofBaseApp{
 
         //oculus
         ofxOculusDK2        oculusRift;
-        
-        ofImage normalmap;
 };
