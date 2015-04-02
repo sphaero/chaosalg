@@ -6,7 +6,6 @@ void ofApp::setup(){
     ofDisableArbTex();
     //ofSetVerticalSync(true);
     ofEnableAlphaBlending();
-    
 	shader.load("shaders/vert.glsl", "shaders/frag.glsl"); 
     sphereShader.load("shaders/sphere_vert.glsl", "shaders/sphere_frag.glsl");
     ofBackground(1,25,255);
@@ -213,6 +212,9 @@ void ofApp::keyReleased(int key){
     if (key == ' ') {
         shader.load("shaders/vert.glsl", "shaders/frag.glsl");
         sphereShader.load("shaders/sphere_vert.glsl", "shaders/sphere_frag.glsl");
+    }
+    else if (key == 'f') {
+        ofToggleFullscreen();
     }
 }
 
