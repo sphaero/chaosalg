@@ -173,7 +173,7 @@ void noise_sin_interpol_tex() {
 
 void rocky_tex() {
     vec3 surf2view = normalize(camPos.xyz - var_position);
-    vec3 diffuseColor = vec3(0.077,0.029, 0.002) + vec3(slip_rand(var_texcoord, 2048)*0.05);
+    vec3 diffuseColor = vec3(.177,0.129, 0.102) + vec3(slip_rand(var_texcoord, 2048)*0.1);
     outputColor.a = 1.0;
     outputColor.rgb = basic_phong(var_normal, normalize(-lightPos), surf2view, diffuseColor, vec3(0));
 }
@@ -187,7 +187,7 @@ void rocky_snow_slope() {
     {
         float alpha = smoothstep(0.6, 0.64, horizon_length);
         specColor = vec3(0);
-        vec3 rockDiffuse = vec3(0.077,0.029, 0.002) + vec3(slip_rand(var_texcoord, 2048)*0.05);
+        vec3 rockDiffuse = vec3(0.177,0.129, 0.102) + vec3(slip_rand(var_texcoord, 2048)*0.05);
         diffColor = mix(diffColor, rockDiffuse, alpha);
     }
     outputColor.a = 1.0;
@@ -223,7 +223,7 @@ void slope_normal() {
     {
         float alpha = smoothstep(0.6, 0.64, horizon_length);
         specColor = vec3(0);
-        vec3 rockDiffuse = vec3(0.077,0.029, 0.002) + vec3(slip_rand(var_texcoord, 2048)*0.05);
+        vec3 rockDiffuse = vec3(0.177,0.129, 0.102) + vec3(slip_rand(var_texcoord, 2048)*0.05);
         diffColor = mix(diffColor, rockDiffuse, alpha);
     }
     outputColor.a = 1.0;
@@ -260,7 +260,7 @@ void slope_normal_enhanced() {
         float alpha = smoothstep(0.6, 0.64, horizon_length);
         frag_normal *= clamp(horizon_length, 0.6, 0.8);
         specColor = vec3(0);
-        vec3 rockDiffuse = vec3(0.077,0.029, 0.002) + vec3(slip_rand(var_texcoord, 2048)*0.05);
+        vec3 rockDiffuse = vec3(0.177,0.129, 0.102) + vec3(slip_rand(var_texcoord, 2048)*0.05);
         diffColor = mix(diffColor, rockDiffuse, alpha);
     }
     outputColor.a = 1.0;
@@ -296,7 +296,7 @@ void landscape_fog() {
     {
         float alpha = smoothstep(0.6, 0.64, horizon_length);
         frag_normal *= clamp(horizon_length, 0.6, 0.8);
-        vec3 rockDiffuse = vec3(0.077,0.029, 0.002) + vec3(slip_rand(var_texcoord, 2048)*0.05);
+        vec3 rockDiffuse = vec3(0.177,0.129, 0.102) + vec3(slip_rand(var_texcoord, 2048)*0.05);
         diffColor = mix(diffColor, rockDiffuse, alpha);
         specColor = mix(specColor, vec3(0), alpha);
     }

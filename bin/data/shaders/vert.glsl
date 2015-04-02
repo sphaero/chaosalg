@@ -1,5 +1,5 @@
 #version 150
-#extension GL_EXT_gpu_shader4 : enable
+//#extension GL_EXT_gpu_shader4 : enable
 
 uniform int phase;
 uniform int subdiv;
