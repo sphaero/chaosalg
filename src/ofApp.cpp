@@ -8,11 +8,13 @@ void ofApp::setup(){
     ofEnableAlphaBlending();
 	shader.load("shaders/vert.glsl", "shaders/frag.glsl"); 
     sphereShader.load("shaders/sphere_vert.glsl", "shaders/sphere_frag.glsl");
-    ofBackground(1,25,255);
+    ofBackground(0);//1,25,255);
     ofSetColor(255);
 
+    verdana.load("verdana.ttf", 32, true, true, true);
+    
     oculusRift.baseCamera = &cam; //attach to your camera
-    //oculusRift.setup();
+    oculusRift.setup();
 
     // needed for programmable renderer
     ofViewport(ofGetNativeViewport());
@@ -29,9 +31,10 @@ void ofApp::setup(){
     cam.setOrientation(ofVec3f(75,0,0));
     cam.setNearClip(0.001);
     cam.setFarClip(3);
+    cam.setVFlip(true);
         
-    //oculusRift.lockView = false;
-    //oculusRift.setUsePredictedOrientation(true);
+    oculusRift.lockView = false;
+    oculusRift.setUsePredictedOrientation(true);
 
     // generate a plane
     int rows = subdiv, columns = subdiv;
@@ -72,6 +75,13 @@ void ofApp::setup(){
     sphere.setUseVbo(true);
     sphere.setScale(-1);
     sphere.setOrientation(ofVec3f(90,0,0));
+    
+    //setup plane for text
+    plane.set(1.6, 0.4);
+    plane.setPosition(0,1.5, 0.2);
+    plane.setOrientation(ofVec3f(90,0,0));
+    texttex.allocate(512,256,GL_RGBA );
+    //plane.setParent(cam);
 }
 
 //--------------------------------------------------------------
@@ -105,13 +115,14 @@ void ofApp::draw() {
     }
     // draw ui
     ofDisableDepthTest();
-    gui.draw();
+    if (ui) gui.draw();
 	ofDrawBitmapString("fps: " + ofToString((int)ofGetFrameRate()) + " pos: " + ofToString(cam.getPosition()), 20, 10);
 }
 
 //--------------------------------------------------------------
 void ofApp::draw_scene(){
     ofPushStyle();
+    ofScale(10,10,10);
     if (debug.get()) {
         origin.drawAxes(0.1);
         ofTranslate(-0.5,-0.5);
@@ -122,14 +133,16 @@ void ofApp::draw_scene(){
         light.setPosition(lightPos.get());
         light.draw();
         ofBackground(1,25,255);
-        ofDrawLine(origin.getPosition(),lightPos.get()); 
+        ofDrawLine(origin.getPosition(),lightPos.get());
+        
     }
-    
     sphereShader.begin();
     sphereShader.setUniform3f("lightPos", lightPos.get());
     sphere.draw();
     sphereShader.end();
 
+    draw_text();
+    
     shader.begin();
     ofColor(255);
     mesh.draw();
@@ -139,12 +152,27 @@ void ofApp::draw_scene(){
     shader.setUniform3f("camPos", cam.getPosition());
     shader.setUniform1i("subdiv", subdiv);
     shader.setUniform1f("seed", seed.get());
+    shader.setUniform1f("fog_depth", fog_depth.get());
     
     // make light direction slowly rotate
     shader.setUniform3f("lightDir", sin(ofGetElapsedTimef()/10), cos(ofGetElapsedTimef()/10), 0);
-
     shader.end();
-	ofPopStyle();
+    //ofDisableDepthTest();
+    ofPopStyle();
+}
+
+void ofApp::draw_text() {
+    // Broken :(
+    //texttex.begin();
+    //ofClear(255,255,255, 0);
+    //ofColor(255,0,0);
+    //ofDrawBitmapString("Halloooooooo", 1, 1, 1);
+    //texttex.end();
+    
+    //texttex.bind();
+    //plane.draw();
+    //texttex.unbind();
+    ofViewport(ofGetNativeViewport());
 }
 
 void ofApp::updateValue(float& source, float& dest) {
@@ -158,13 +186,17 @@ void ofApp::updateValue(ofVec3f& source, ofVec3f& dest) {
 }
 
 void ofApp::updateCam() {
+    if (phase > 5) {
+        ofVec3f circlepos = ofVec3f(sin((ofGetElapsedTimef()-_phase8time)/rot_speed.get())*3, cos((ofGetElapsedTimef()-_phase8time)/rot_speed.get())*-3, 0.6f);
+        _cam_pos = circlepos+ofVec3f(5,5,0);
+    }
     ofVec3f source = cam.getPosition();
     source.x = ofLerp(source.x, _cam_pos.x, pow(2,-speed.get()));
     source.y = ofLerp(source.y, _cam_pos.y, pow(2,-speed.get()));
     source.z = ofLerp(source.z, _cam_pos.z, pow(2,-speed.get()));
     cam.setPosition(source);
     // update sphere
-    sphere.setPosition(source.x, source.y, -0.1);
+    sphere.setPosition(source.x/10, source.y/10, -0.1);
     
     /*source = cam.getOrientationEuler();
     source.x = ofLerp(source.x, _cam_ori.x, pow(2,-speed.get()));
@@ -189,20 +221,25 @@ void ofApp::keyPressed(int key){
     else if (key == 'd') {
         _cam_pos += ofVec3f(.01,0,0);
     }
-    else if (key == 'e') {
+    else if (key == 'q') {
         _cam_pos += ofVec3f(0,0,-.01);
     }
-    else if (key == 'q') {
+    else if (key == 'e') {
         _cam_pos += ofVec3f(0,0,.01);
     }
     else if (key == OF_KEY_LEFT) {
-        phase.set(phase.get()-1);
+        if (seed.get() > 13) seed.set(seed.get()-1);
+        else phase.set(phase.get()-1);
     }
     else if (key == OF_KEY_RIGHT) {
-        phase.set(phase.get()+1);
+        if (phase > 20) seed.set(seed.get()+1);
+        else phase.set(phase.get()+1);
     }
     else if(key == 'l'){
         oculusRift.lockView = !oculusRift.lockView;
+    }
+    else if(key == OF_KEY_TAB ){
+        ui = !ui;
     }
 }
 
@@ -258,10 +295,12 @@ void ofApp::setupParams() {
 
     parameters.setName("settings");
     parameters.add(speed.set("lerpspeed", 9, 1, 15));
+    parameters.add(rot_speed.set("rotate speed", 100, 1, 500));
     parameters.add(phase.set("phase", 0, 0, 20));
     parameters.add(debug.set("debug", false));
     parameters.add(lightPos.set("lightPos", light.getPosition(), ofVec3f(-10), ofVec3f(10)));
     parameters.add(seed.set("seed", 12.9898, 0.f, 32.f));
+    parameters.add(fog_depth.set("fog_depth", 10., 0.f, 32.f));
     //settings.load("settings.xml");
     //settings.deserialize(parameters);
     gui.setup(parameters);
@@ -274,16 +313,19 @@ void ofApp::phaseChanged(int &newPhase) {
     ofLogVerbose() << "phase change to: " << newPhase; 
     switch (newPhase) {
         case 0:
+            _cam_pos = ofVec3f(1.7,-1.4, 0.7);
         case 1:
+            _cam_pos = ofVec3f(2.7,-1.4, 0.7);
         case 4:
-            _cam_pos = ofVec3f(0.5,-0.6, 0.15);
-            _cam_ori = ofVec3f(90,0,0);
+            //_cam_ori = ofVec3f(90,0,0);
             break;
         case 6:
-        // start moving over noise
-            _cam_pos = ofVec3f(0.5,0.5, 0.1);
-            _cam_ori = ofVec3f(0,0,0);
+            // start moving over noise
+            _cam_pos = ofVec3f(2.1,0.5, 0.6);
+            //_cam_ori = ofVec3f(0,0,0);
+            _phase8time = ofGetElapsedTimef();
         case 8:
+            
         case 9:
         case 10:
         case 11:

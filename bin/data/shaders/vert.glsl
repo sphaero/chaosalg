@@ -4,6 +4,7 @@
 uniform int phase;
 uniform int subdiv;
 uniform float seed = 12.9898;
+uniform float fog_depth = 10.0;
 
 const int a = 1140671485;
 const int c = 128201163;
@@ -30,11 +31,11 @@ out vec3 var_normal;
 
 // begin helper methods
 float sin_n(float val) {
-    return sin(val*31)*0.5+0.5;
+    return sin(val*62.8)*0.5+0.5;
 } 
 
 float cos_n(float val) {
-    return cos(val*31)*0.5+0.5;
+    return cos(val*62.8)*0.5+0.5;
 }
 
 float lmix( const float a, const float b, const float t ) {
@@ -150,11 +151,11 @@ void sinus_line() {
     // scale y axis
     vert_pos.y *= 0.01;
     //vert_pos.y += 0.5;
-    vert_pos.z = sin_n(vert_pos.x)*0.1;
+    vert_pos.z = sin_n(vert_pos.x)*0.05;
     // just a small z addition to make sure we have a visible line
     vert_pos.z += vert_pos.y*0.2;
     gl_Position = modelViewProjectionMatrix * vert_pos;
-    var_color = color;
+    var_color = color * vec4(vec3(vert_pos.z*20),1);
     // normal from sinus
     var_normal = normalize(vec3(abs(cos(vert_pos.x*31))*0.5, normal.y, abs(sin(vert_pos.x*31))*0.5+0.5));
 }
@@ -163,9 +164,9 @@ void sinus_3d() {
     // a sinus in 3d 
     //gl_TexCoord[0] = texcoord;
     vec4 vert_pos = position;
-    vert_pos.z = sin_n(vert_pos.x)*0.1;
+    vert_pos.z = sin_n(vert_pos.x)*0.05;
     gl_Position = modelViewProjectionMatrix * vert_pos;
-    var_color = color;
+    var_color = color * vec4(vec3(vert_pos.z*20),1);
     // normal from sinus
     var_normal = normalize(vec3(abs(cos(vert_pos.x*31))*0.5, normal.y, abs(sin(vert_pos.x*31))*0.5+0.5));
 }
@@ -174,9 +175,9 @@ void sinus_x_y() {
     // sinus on x and y
     //gl_TexCoord[0] = texcoord;
     vec4 vert_pos = position;
-    vert_pos.z = (sin_n(vert_pos.x) * sin_n(vert_pos.y))*0.1;
+    vert_pos.z = (sin_n(vert_pos.x) * sin_n(vert_pos.y))*0.05;
     gl_Position = modelViewProjectionMatrix * vert_pos;
-    var_color = color;
+    var_color = color * vec4(vec3(vert_pos.z*20),1);
     //var_normal = vec3(1, cos(vert_pos.x*31)/sqrt(1+(pow(cos(vert_pos.x*31), 2))), 0);
     var_normal = normalize(vec3(abs(cos(vert_pos.x*31))*0.5, abs(-cos(vert_pos.x*31))*0.5, abs(sin(vert_pos.x*31))*0.5+0.5));
 }
@@ -191,9 +192,9 @@ void noise_line() {
     vec4 vert_pos = position;
     // scale y axis
     vert_pos.y *= 0.0000001;
-    vert_pos.z = rand(vert_pos.xy)*0.1;
+    vert_pos.z = rand(vert_pos.xy)*0.05;
     gl_Position = modelViewProjectionMatrix * vert_pos;
-    var_color = color * vec4(vec3(vert_pos.z*10),1);
+    var_color = color * vec4(vec3(vert_pos.z*20),1);
     var_normal = normal;
 }
 
@@ -255,7 +256,7 @@ void landscape_normal() {
     var_normal = calc_quad_normal(ngb1, ngb2, ngb3, ngb4);
     
     gl_Position = modelViewProjectionMatrix * vert_pos;
-    var_color = color;
+    var_color = color * vec4(vec3(vert_pos.z*20),1);
 }
 
 void landscape_normal_detail() {
@@ -285,7 +286,7 @@ void landscape_normal_detail() {
     var_normal = calc_quad_normal(ngb1, ngb2, ngb3, ngb4);
 
     gl_Position = modelViewProjectionMatrix * vert_pos;
-    var_color = color;
+    var_color = color * vec4(vec3(vert_pos.z*20),1);
 }
 
 void landscape_normal_detail_height() {
@@ -324,7 +325,7 @@ void landscape_normal_detail_height() {
     var_normal = calc_quad_normal(ngb1, ngb2, ngb3, ngb4);
 
     gl_Position = modelViewProjectionMatrix * vert_pos;
-    var_color = color;
+    var_color = color * vec4(vec3(vert_pos.z*20),1);
     var_position = vert_pos.xyz;
 }
 
@@ -364,7 +365,7 @@ void landscape_fog() {
     var_normal = calc_quad_normal(ngb1, ngb2, ngb3, ngb4);
 
     gl_Position = modelViewProjectionMatrix * vert_pos;
-    float fog_val = clamp(gl_Position.z, 0.0, 1.0);
+    float fog_val = clamp(gl_Position.z/10, 0.0, 1.0);
     var_color = color * vec4(vert_pos.z*20, fog_val, 0, 1);
     var_position = vert_pos.xyz;
 }
@@ -410,7 +411,7 @@ void main()
             noise_line();
             break;
         case 4:
-            phase4();
+            simple_line();
             break;
         case 3:
             sinus_x_y();

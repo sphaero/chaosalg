@@ -11,6 +11,7 @@ class ofApp : public ofBaseApp{
 		void update();
 		void draw();
 		void draw_scene();
+		void draw_text();
 
 		void keyPressed(int key);
 		void keyReleased(int key);
@@ -24,6 +25,7 @@ class ofApp : public ofBaseApp{
 
         ofShader shader;
         ofVboMesh mesh;
+        ofPlanePrimitive plane;
         ofShader sphereShader;
         ofSpherePrimitive sphere;
         int subdiv = 256;
@@ -34,15 +36,21 @@ class ofApp : public ofBaseApp{
         of3dPrimitive origin;
         ofNode light;
         
+        ofTrueTypeFont	verdana;
+        ofFbo           texttex;
+        
         void setupParams();
         ofxPanel            gui;
+        bool                ui;
         ofParameterGroup    parameters;
         ofXml               settings;
         ofParameter<float> speed;
+        ofParameter<float> rot_speed;
         ofParameter<int> phase;
         ofParameter<bool> debug;
         ofParameter<ofVec3f> lightPos;
         ofParameter<float> seed;
+        ofParameter<float> fog_depth;
         
         void updateCam();
         void updatePhase();
@@ -52,6 +60,7 @@ class ofApp : public ofBaseApp{
         void updateCamRotation(ofVec2f mouse);
         ofVec3f _cam_pos;
         ofVec3f _cam_ori;
+        float _phase8time;
 
         //oculus
         ofxOculusDK2        oculusRift;

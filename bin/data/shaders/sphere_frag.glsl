@@ -1,4 +1,5 @@
 #version 150
+// nog een leuke voor de sky https://www.shadertoy.com/view/4sj3z3
 // these are for the programmable pipeline system and are passed in
 // by default from OpenFrameworks
 uniform mat4 modelViewMatrix;
