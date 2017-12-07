@@ -1,2 +1,2 @@
 ofxGui
-ofxOculusDK2
+#ofxOculusDK2

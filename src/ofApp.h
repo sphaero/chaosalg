@@ -2,7 +2,7 @@
 
 #include "ofMain.h"
 #include "ofxGui.h"
-#include "ofxOculusDK2.h"
+//#include "ofxOculusDK2.h"
 
 class ofApp : public ofBaseApp{
 
@@ -29,7 +29,7 @@ class ofApp : public ofBaseApp{
         ofShader sphereShader;
         ofSpherePrimitive sphere;
         int subdiv = 256;
-        ofCamera cam;
+        ofEasyCam cam;
         float rotPos;
 		ofQuaternion curRot;
 		ofVec2f lastMouse;
@@ -51,6 +51,9 @@ class ofApp : public ofBaseApp{
         ofParameter<ofVec3f> lightPos;
         ofParameter<float> seed;
         ofParameter<float> fog_depth;
+
+        bool bDrawFormula;
+        void drawFormula();
         
         void updateCam();
         void updatePhase();
@@ -63,5 +66,5 @@ class ofApp : public ofBaseApp{
         float _phase8time;
 
         //oculus
-        ofxOculusDK2        oculusRift;
+//        ofxOculusDK2        oculusRift;
 };

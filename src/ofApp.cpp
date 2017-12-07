@@ -4,20 +4,18 @@
 void ofApp::setup(){
     ofSetLogLevel(OF_LOG_VERBOSE);
     ofDisableArbTex();
-    //ofSetVerticalSync(true);
+    ofEnableNormalizedTexCoords();
+    ofSetVerticalSync(true);
     ofEnableAlphaBlending();
-	shader.load("shaders/vert.glsl", "shaders/frag.glsl"); 
-    sphereShader.load("shaders/sphere_vert.glsl", "shaders/sphere_frag.glsl");
-    ofBackground(0);//1,25,255);
+	ofBackground(0);//1,25,255);
     ofSetColor(255);
-
-    verdana.load("verdana.ttf", 32, true, true, true);
     
-    oculusRift.baseCamera = &cam; //attach to your camera
-    oculusRift.setup();
-
+    verdana.load("verdana.ttf", 32, true, true, true);
+    shader.load("shaders/vert.glsl", "shaders/frag.glsl"); 
+    sphereShader.load("shaders/sphere_vert.glsl", "shaders/sphere_frag.glsl");
+    
     // needed for programmable renderer
-    ofViewport(ofGetNativeViewport());
+    //ofViewport(ofGetNativeViewport());
     
     light.setPosition(1,1,1);
     
@@ -25,17 +23,13 @@ void ofApp::setup(){
     setupParams();
     int p=0;
     phaseChanged(p);
-    _cam_pos = ofVec3f(0.5,-0.6, 0.15);
-    _cam_ori = ofVec3f(75, 0, 0);
-
-    cam.setOrientation(ofVec3f(75,0,0));
+    _cam_pos = ofVec3f(5, -5.1 , .7);
+    cam.disableMouseInput();
+    cam.setAutoDistance(false);
+    cam.setOrientation(ofVec3f(90,0,0));
     cam.setNearClip(0.001);
-    cam.setFarClip(3);
-    cam.setVFlip(true);
-        
-    oculusRift.lockView = false;
-    oculusRift.setUsePredictedOrientation(true);
-
+    cam.setFarClip(40);
+    
     // generate a plane
     int rows = subdiv, columns = subdiv;
     int width = 1, height = 1;
@@ -70,18 +64,11 @@ void ofApp::setup(){
             mesh.addIndex((y+1)*columns + x);
         }
     }
-    // generate a spere for background
+    // generate a sphere for background
     sphere.setRadius( 2.0 );
     sphere.setUseVbo(true);
-    sphere.setScale(-1);
-    sphere.setOrientation(ofVec3f(90,0,0));
-    
-    //setup plane for text
-    plane.set(1.6, 0.4);
-    plane.setPosition(0,1.5, 0.2);
-    plane.setOrientation(ofVec3f(90,0,0));
-    texttex.allocate(512,256,GL_RGBA );
-    //plane.setParent(cam);
+    sphere.setScale(1, -1, 1);
+    sphere.setOrientation(ofVec3f(90,0,180));
 }
 
 //--------------------------------------------------------------
@@ -91,40 +78,31 @@ void ofApp::update(){
 }
 
 void ofApp::draw() {
-    if (oculusRift.isSetup()) {
-        ofColor(255);
-        glEnable(GL_DEPTH_TEST);
-
-        oculusRift.beginLeftEye();
-        draw_scene();
-        oculusRift.endLeftEye();
-
-        oculusRift.beginRightEye();
-        draw_scene();
-        oculusRift.endRightEye();
-
-        oculusRift.draw();
-        glDisable(GL_DEPTH_TEST);
-    }
-    else {
-        ofEnableDepthTest();
-        cam.begin();
-        draw_scene();
-        cam.end();
-        ofDisableDepthTest();
-    }
-    // draw ui
+    ofEnableDepthTest();
+    cam.begin();
+    
+    draw_scene();
+    cam.end();    
     ofDisableDepthTest();
-    if (ui) gui.draw();
-	ofDrawBitmapString("fps: " + ofToString((int)ofGetFrameRate()) + " pos: " + ofToString(cam.getPosition()), 20, 10);
+    if (ui) {
+        ofPushMatrix();
+        ofTranslate(ofGetWidth() - 300, 0);
+        gui.draw( );
+        ofPopMatrix();
+    }
+    if ( bDrawFormula ) {
+        drawFormula();
+        ofDrawBitmapString("fps: " + ofToString((int)ofGetFrameRate()) + " pos: " + ofToString(cam.getPosition()) + " ori: "  + ofToString(cam.getOrientationEuler()), 20, 10);
+    }
 }
 
 //--------------------------------------------------------------
 void ofApp::draw_scene(){
     ofPushStyle();
     ofScale(10,10,10);
+    
     if (debug.get()) {
-        origin.drawAxes(0.1);
+        origin.drawAxes(1);
         ofTranslate(-0.5,-0.5);
         origin.drawAxes(0.1);
         ofTranslate(1,1);
@@ -140,8 +118,6 @@ void ofApp::draw_scene(){
     sphereShader.setUniform3f("lightPos", lightPos.get());
     sphere.draw();
     sphereShader.end();
-
-    draw_text();
     
     shader.begin();
     ofColor(255);
@@ -162,17 +138,7 @@ void ofApp::draw_scene(){
 }
 
 void ofApp::draw_text() {
-    // Broken :(
-    //texttex.begin();
-    //ofClear(255,255,255, 0);
-    //ofColor(255,0,0);
-    //ofDrawBitmapString("Halloooooooo", 1, 1, 1);
-    //texttex.end();
-    
-    //texttex.bind();
-    //plane.draw();
-    //texttex.unbind();
-    ofViewport(ofGetNativeViewport());
+    //ofViewport(ofGetNativeViewport());
 }
 
 void ofApp::updateValue(float& source, float& dest) {
@@ -180,9 +146,9 @@ void ofApp::updateValue(float& source, float& dest) {
 }
 
 void ofApp::updateValue(ofVec3f& source, ofVec3f& dest) {
-    ofLerp(source.x, dest.x, speed.get());
-    ofLerp(source.y, dest.y, speed.get());
-    ofLerp(source.z, dest.z, speed.get());
+    ofLerp(source.x, dest.x, -speed.get());
+    ofLerp(source.y, dest.y, -speed.get());
+    ofLerp(source.z, dest.z, -speed.get());
 }
 
 void ofApp::updateCam() {
@@ -198,7 +164,8 @@ void ofApp::updateCam() {
     // update sphere
     sphere.setPosition(source.x/10, source.y/10, -0.1);
     
-    /*source = cam.getOrientationEuler();
+    /*
+    source = cam.getOrientationEuler();
     source.x = ofLerp(source.x, _cam_ori.x, pow(2,-speed.get()));
     source.y = ofLerp(source.y, _cam_ori.y, pow(2,-speed.get()));
     source.z = ofLerp(source.z, _cam_ori.z, pow(2,-speed.get()));
@@ -236,16 +203,19 @@ void ofApp::keyPressed(int key){
         else phase.set(phase.get()+1);
     }
     else if(key == 'l'){
-        oculusRift.lockView = !oculusRift.lockView;
+        //oculusRift.lockView = !oculusRift.lockView;
     }
     else if(key == OF_KEY_TAB ){
         ui = !ui;
+    }
+    else if(key == OF_KEY_BACKSPACE ){
+        bDrawFormula = !bDrawFormula;
     }
 }
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
-    if (oculusRift.isSetup()) oculusRift.dismissSafetyWarning();
+    //if (oculusRift.isSetup()) oculusRift.dismissSafetyWarning();
     if (key == ' ') {
         shader.load("shaders/vert.glsl", "shaders/frag.glsl");
         sphereShader.load("shaders/sphere_vert.glsl", "shaders/sphere_frag.glsl");
@@ -294,7 +264,7 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 void ofApp::setupParams() {
 
     parameters.setName("settings");
-    parameters.add(speed.set("lerpspeed", 9, 1, 15));
+    parameters.add(speed.set("lerpspeed", 8, 1, 15));
     parameters.add(rot_speed.set("rotate speed", 100, 1, 500));
     parameters.add(phase.set("phase", 0, 0, 20));
     parameters.add(debug.set("debug", false));
@@ -307,15 +277,89 @@ void ofApp::setupParams() {
     //font.load( OF_TTF_SANS,9,true,true);
     
     phase.addListener(this, &ofApp::phaseChanged);
+
+    bDrawFormula = false;
+}
+
+void ofApp::drawFormula() {
+
+    std::string f = "";
+    switch ( phase.get() ) {
+        case 0:
+        case 4:
+            f = "z = 0";
+            break;
+        case 1:
+        case 2:
+            f = "z = sin(x);";
+            break;
+        case 3:
+            f = "z = sin(x) * sin(y)";
+            break;
+        case 5:
+            f = "z = fract(sin(dot(x ,vec2( 12, 78.233 ))) * 43758.5453); // (rnd)";
+            break;
+        case 6:
+            f = "z = rnd(xy);";
+            break;
+        case 7:
+            f = "z = step( rnd(xy) );";
+            break;
+        case 8:
+            f = "z = lip( rnd(xy) );";
+            break;            
+        case 9:
+            f = "z = slip( rnd(xy) );";
+            break;
+        case 10:
+            f = "color = phong( normal, light_direction );";
+            break;
+        case 11:
+            f = "z += slip( rnd(xy) ) * 0.1;";
+            break;
+        case 12:
+            f = "z += slip( rnd(xy) ) * 0.01;";
+            break;
+        case 13:
+            f = "color = rnd(texcoord);";
+            break;
+        case 14:
+            f = "color = step( rnd(texcoord) );";
+            break;
+        case 15:
+            f = "color = lip( rnd(texcoord) );";
+            break;
+        case 16:
+            f = "color = slip( rnd(texcoord) );";
+            break;
+        case 17:
+            f = "color = slip( rnd(texcoord) ) * brown;";
+            break;
+        case 18:
+            f = "alpha = smoothstep( 0.6, 0.64, length( normal.xy) );";
+            break;
+        case 19:
+        case 20:
+            f = "alpha = smoothstep( 0.6, 0.64, length( frag_normal.xy) );";
+            break;
+
+        default:
+            //_cam_pos = ofVec3f(0,-0.6, 0.1);
+            //_cam_ori = ofVec3f(75, 0, 0);
+            break;
+    }
+    verdana.drawString("formula: " + f, 20, 80);
+    //ofDrawBitmapString("formula: " + f, 20, 40);
 }
 
 void ofApp::phaseChanged(int &newPhase) {
     ofLogVerbose() << "phase change to: " << newPhase; 
     switch (newPhase) {
         case 0:
-            _cam_pos = ofVec3f(1.7,-1.4, 0.7);
+            //_cam_pos = ofVec3f(1.7,-1., 0.7);
+            break;
         case 1:
-            _cam_pos = ofVec3f(2.7,-1.4, 0.7);
+            _cam_pos = ofVec3f(5,-5.1, 0.7);
         case 4:
             //_cam_ori = ofVec3f(90,0,0);
             break;

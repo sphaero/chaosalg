@@ -8,7 +8,7 @@
 #   The location of your root openFrameworks installation
 #       (default) OF_ROOT = ../../.. 
 ################################################################################
-OF_ROOT = $(HOME)/Documents/z25/z25-lib/unstable/openFrameworks
+OF_ROOT = $(HOME)/src/openframeworks
 
 ################################################################################
 # PROJECT ROOT
